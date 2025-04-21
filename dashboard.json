@@ -24,6 +24,20 @@
           },
           {
             "type": "component",
+            "flex": 3,
+            "component": {
+              "id": "disk",
+              "type": "text",
+              "title": "💾 Disk Usage (/)",
+              "data": {
+                "source": "script",
+                "command": "df -h",
+                "refresh_interval": 180
+              }
+            }
+          },
+          {
+            "type": "component",
             "flex": 2,
             "component": {
               "id": "calendar",
@@ -32,20 +46,6 @@
               "data": {
                 "source": "script",
                 "command": "cal"
-              }
-            }
-          },
-          {
-            "type": "component",
-            "flex": 2,
-            "component": {
-              "id": "quote",
-              "type": "text",
-              "title": "❝ Quote of the Day",
-              "data": {
-                "source": "script",
-                "command": "./quote.sh",
-                "refresh_interval": 3600
               }
             }
           }
@@ -86,15 +86,15 @@
           },
           {
             "type": "component",
-            "flex": 3,
+            "flex": 2,
             "component": {
-              "id": "disk",
+              "id": "quote",
               "type": "text",
-              "title": "💾 Disk Usage (/)",
+              "title": "❝ Quote of the Day",
               "data": {
                 "source": "script",
-                "command": "df -h",
-                "refresh_interval": 180
+                "command": "./quote.sh",
+                "refresh_interval": 3600
               }
             }
           },
