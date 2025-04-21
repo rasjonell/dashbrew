@@ -53,18 +53,34 @@ func renderNode(
 		}
 
 		var rendered []string
-		for _, child := range node.Children {
+
+		offset := 0
+		numChildren := len(node.Children)
+
+		for i, child := range node.Children {
 			flex := getFlex(child)
+			isLast := i == numChildren-1
+
 			var childWidth, childHeight int
 			if node.Direction == "row" {
-				childWidth = width * flex / totalFlex
+				if isLast {
+					childWidth = width - offset
+				} else {
+					childWidth = width * flex / totalFlex
+				}
 				childHeight = height
+				offset += childWidth
+				rendered = append(rendered, renderNode(child, childWidth, childHeight, renderComponent, focusedComponentId))
 			} else {
+				if isLast {
+					childHeight = height - offset
+				} else {
+					childHeight = height * flex / totalFlex
+				}
 				childWidth = width
-				childHeight = height * flex / totalFlex
+				offset += childHeight
+				rendered = append(rendered, renderNode(child, childWidth, childHeight, renderComponent, focusedComponentId))
 			}
-
-			rendered = append(rendered, renderNode(child, childWidth, childHeight, renderComponent, focusedComponentId))
 		}
 
 		if node.Direction == "row" {

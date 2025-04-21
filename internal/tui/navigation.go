@@ -25,6 +25,7 @@ func (m *model) handleResize(msgWidth, msgHeight int) {
 	w, h := evenWidthHeight(msgWidth, msgHeight)
 	m.width = w
 	m.height = h
+	m.vpReady = false
 
 	if m.cfg == nil || m.cfg.Layout == nil {
 		return
@@ -79,21 +80,33 @@ func calculateBoundingBoxes(
 		}
 
 		offset := 0
-		for _, child := range node.Children {
+		numChildren := len(node.Children)
+		for i, child := range node.Children {
 			flex := getFlex(child)
+
+			isLast := i == numChildren-1
 
 			var childX, childY, childW, childH int
 			if node.Direction == "row" {
 				childX = x + offset
 				childY = y
 				childH = h
-				childW = w * flex / totalFlex
+				if isLast {
+					childW = w - offset
+				} else {
+					childW = w * flex / totalFlex
+				}
 				offset += childW
 			} else {
 				childX = x
 				childY = y + offset
 				childW = w
-				childH = h * flex / totalFlex
+
+				if isLast {
+					childH = h - offset
+				} else {
+					childH = h * flex / totalFlex
+				}
 				offset += childH
 			}
 
@@ -113,22 +126,22 @@ func calculateNavigationMap(boxes map[string]*boundingBox) map[string]*navigatio
 		minDistLeft := math.MaxFloat64
 		minDistRight := math.MaxFloat64
 
-		sourceCenterX := float64(sourceBox.X) + float64(sourceBox.W)/2.0
-		sourceCenterY := float64(sourceBox.Y) + float64(sourceBox.H)/2.0
+		sourceTopX := float64(sourceBox.X)
+		sourceTopY := float64(sourceBox.Y)
 
 		for targetID, targetBox := range boxes {
 			if sourceID == targetID {
 				continue
 			}
 
-			targetCenterX := float64(targetBox.X) + float64(targetBox.W)/2.0
-			targetCenterY := float64(targetBox.Y) + float64(targetBox.H)/2.0
+			targetTopX := float64(targetBox.X)
+			targetTopY := float64(targetBox.Y)
 
 			vOverlap := max(sourceBox.Y, targetBox.Y) < min(sourceBox.Y+sourceBox.H, targetBox.Y+targetBox.H)
 			hOverlap := max(sourceBox.X, targetBox.X) < min(sourceBox.X+sourceBox.W, targetBox.X+targetBox.W)
 
 			if vOverlap && targetBox.X >= sourceBox.X+sourceBox.W {
-				dist := math.Abs(targetCenterX - sourceCenterX)
+				dist := math.Abs(targetTopX - sourceTopX)
 				if dist < minDistRight {
 					minDistRight = dist
 					currentNav.Right = targetID
@@ -136,7 +149,7 @@ func calculateNavigationMap(boxes map[string]*boundingBox) map[string]*navigatio
 			}
 
 			if vOverlap && targetBox.X+targetBox.W <= sourceBox.X {
-				dist := math.Abs(targetCenterX - sourceCenterX)
+				dist := math.Abs(targetTopX - sourceTopX)
 				if dist < minDistLeft {
 					minDistLeft = dist
 					currentNav.Left = targetID
@@ -144,15 +157,15 @@ func calculateNavigationMap(boxes map[string]*boundingBox) map[string]*navigatio
 			}
 
 			if hOverlap && targetBox.Y >= sourceBox.Y+sourceBox.H {
-				dist := math.Abs(targetCenterY - sourceCenterY)
+				dist := math.Abs(targetTopY - sourceTopY)
 				if dist < minDistDown {
 					minDistDown = dist
 					currentNav.Down = targetID
 				}
 			}
 
-			if hOverlap && targetBox.Y+targetBox.H >= sourceBox.Y {
-				dist := math.Abs(targetCenterY - sourceCenterY)
+			if hOverlap && targetBox.Y+targetBox.H <= sourceBox.Y {
+				dist := math.Abs(targetTopY - sourceTopY)
 				if dist < minDistUp {
 					minDistUp = dist
 					currentNav.Up = targetID
