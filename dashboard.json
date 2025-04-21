@@ -10,9 +10,11 @@
         "children": [
           {
             "type": "component",
+            "flex": 1,
             "component": {
+              "id": "clock",
               "type": "text",
-              "title": "Clock",
+              "title": "🕒 Clock",
               "data": {
                 "source": "script",
                 "command": "date",
@@ -22,15 +24,28 @@
           },
           {
             "type": "component",
-            "flex": 1,
+            "flex": 2,
             "component": {
-              "id": "jsonplaceholder",
+              "id": "calendar",
               "type": "text",
-              "title": "API Example (JSONPlaceholder)",
+              "title": "📅 Calendar",
               "data": {
-                "source": "api",
-                "url": "https://jsonplaceholder.typicode.com/posts/1",
-                "refresh_interval": 10
+                "source": "script",
+                "command": "cal"
+              }
+            }
+          },
+          {
+            "type": "component",
+            "flex": 2,
+            "component": {
+              "id": "quote",
+              "type": "text",
+              "title": "❝ Quote of the Day",
+              "data": {
+                "source": "script",
+                "command": "./quote.sh",
+                "refresh_interval": 3600
               }
             }
           }
@@ -39,29 +54,75 @@
       {
         "type": "container",
         "direction": "column",
-        "flex": 1,
+        "flex": 2,
         "children": [
           {
             "type": "component",
+            "flex": 2,
             "component": {
+              "id": "weather",
               "type": "text",
-              "title": "Date 1",
+              "title": "🌦️ Weather",
               "data": {
-                "source": "script",
-                "command": "echo testasdjaslkdjaslkdjaslkdjalksdjaslkdjaslkdjaslkdjaslkdjaslkdjaslkdjaslkdjaslkdjaslkdj",
-                "refresh_interval": 1
+                "source": "api",
+                "url": "https://wttr.in/Yerevan?format=3",
+                "refresh_interval": 900
               }
             }
           },
           {
             "type": "component",
-            "flex": 1,
+            "flex": 2,
             "component": {
+              "id": "uptime",
               "type": "text",
-              "title": "Calendar",
+              "title": "⏱️ Uptime",
               "data": {
                 "source": "script",
-                "command": "cal"
+                "command": "uptime -p",
+                "refresh_interval": 60
+              }
+            }
+          },
+          {
+            "type": "component",
+            "flex": 3,
+            "component": {
+              "id": "disk",
+              "type": "text",
+              "title": "💾 Disk Usage (/)",
+              "data": {
+                "source": "script",
+                "command": "df -h",
+                "refresh_interval": 180
+              }
+            }
+          },
+          {
+            "type": "component",
+            "flex": 3,
+            "component": {
+              "id": "memory",
+              "type": "text",
+              "title": "🧠 Memory",
+              "data": {
+                "source": "script",
+                "command": "free -h",
+                "refresh_interval": 30
+              }
+            }
+          },
+          {
+            "type": "component",
+            "flex": 2,
+            "component": {
+              "id": "advice",
+              "type": "text",
+              "title": "💡 Advice",
+              "data": {
+                "source": "script",
+                "command": "./advice.sh",
+                "refresh_interval": 30
               }
             }
           }

@@ -52,7 +52,7 @@ func (m *model) setTextContent(id string, output data.FetchOutput) {
 
 	if vp, ok := m.viewports[id]; ok && m.vpReady {
 		if output.Error() != nil {
-			vp.SetContent(fmt.Sprintf("[error]\n%s", output.Error()))
+			vp.SetContent(lipgloss.NewStyle().Width(vp.Width).Render(fmt.Sprintf("[error]\n%s", output.Error())))
 		} else {
 			vp.SetContent(lipgloss.NewStyle().Width(vp.Width).Render(output.Output()))
 		}
