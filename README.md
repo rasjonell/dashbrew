@@ -117,10 +117,11 @@ go build -o dashbrew ./cmd/dashbrew
     - `shift + ←` / `shift + H` - Move Left
     - `shift + →` / `shift + L` - Move Right
     - `Left Click` - Focus Component Under Cursor
-- Scrolling (within focused component):
-    - Mouse Wheel
+- Focused Componet Actions:
+    - Mouse Wheel - Scroll
     - `PgUp` / `b` / `u` - Scroll up.
     - `PgDown` / `Space` / `d` - Scroll down.
+    - `r` - Refresh Data Source 
 - Quit: `Ctrl+C`, `q`, `Esc`
 
 ### 💡 Future Ideas

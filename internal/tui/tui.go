@@ -32,11 +32,12 @@ type componentOutput struct {
 }
 
 type keyMap struct {
-	Quit  key.Binding
-	Up    key.Binding
-	Down  key.Binding
-	Left  key.Binding
-	Right key.Binding
+	Quit    key.Binding
+	Up      key.Binding
+	Down    key.Binding
+	Left    key.Binding
+	Right   key.Binding
+	Refresh key.Binding
 }
 
 var keys = keyMap{
@@ -54,6 +55,9 @@ var keys = keyMap{
 	),
 	Right: key.NewBinding(
 		key.WithKeys("shift+right", "L"),
+	),
+	Refresh: key.NewBinding(
+		key.WithKeys("r", "R"),
 	),
 }
 
@@ -140,6 +144,10 @@ func (m *model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			if nav, ok := m.navMap[m.focusedComponentId]; ok && nav.Right != "" {
 				m.focusedComponentId = nav.Right
 				return m, nil
+			}
+		case key.Matches(msg, keys.Refresh):
+			if comp, ok := m.componentMap[m.focusedComponentId]; ok {
+				return m, fetchComponentAsyncCmd(m.focusedComponentId, comp)
 			}
 		}
 	}
