@@ -6,30 +6,33 @@ import (
 	"github.com/rasjonell/dashbrew/internal/data"
 )
 
-type fetchDataMsg struct{}
-
-func fetchDataCmd() tea.Msg {
-	return fetchDataMsg{}
+type fetchResultMsg struct {
+	ID     string
+	Result data.FetchOutput
 }
 
-func (m *model) fetchAllData() {
+func (m *model) fetchAllData() []tea.Cmd {
+	var cmds []tea.Cmd
 	for id, comp := range m.componentMap {
-		m.fetchSingleComponentData(id, comp)
+		cmds = append(cmds, fetchComponentAsyncCmd(id, comp))
 	}
+	return cmds
 }
 
-func (m *model) fetchSingleComponentData(id string, comp *config.Component) {
-	var output data.FetchOutput
+func fetchComponentAsyncCmd(id string, comp *config.Component) tea.Cmd {
+	return func() tea.Msg {
+		var result data.FetchOutput
 
-	switch comp.Data.Source {
-	case "script":
-		output = data.RunScript(comp.Data.Command)
-	case "api":
-		output = data.RunAPI(comp.Data.URL)
-	}
+		switch comp.Data.Source {
+		case "script":
+			result = data.RunScript(comp.Data.Command)
+		case "api":
+			result = data.RunAPI(comp.Data.URL)
+		}
 
-	switch comp.Type {
-	case "text":
-		m.setTextContent(id, output)
+		return fetchResultMsg{
+			ID:     id,
+			Result: result,
+		}
 	}
 }

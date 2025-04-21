@@ -77,8 +77,14 @@ func (m *model) Init() tea.Cmd {
 	m.buildComponentMap(m.cfg.Layout)
 	m.focusedComponentId = findFirstComponent(m.cfg.Layout)
 
-	cmds := m.scheduleRefreshes()
-	cmds = append(cmds, fetchDataCmd, tea.ClearScreen)
+	fetchCmds := m.fetchAllData()
+	refreshCmds := m.scheduleRefreshes()
+
+	cmds := append(fetchCmds, refreshCmds...)
+	cmds = append(cmds, tea.ClearScreen)
+
+	m.initialized = true
+
 	return tea.Batch(cmds...)
 }
 
@@ -90,14 +96,19 @@ func (m *model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case tea.WindowSizeMsg:
 		m.handleResize(msg.Width, msg.Height)
 
-	case fetchDataMsg:
-		m.fetchAllData()
-		m.initialized = true
+	case fetchResultMsg:
+		if comp, ok := m.componentMap[msg.ID]; ok {
+			switch comp.Type {
+			case "text":
+				m.setTextContent(msg.ID, msg.Result)
+			}
+		}
 
 	case refreshMsg:
 		if comp, ok := m.componentMap[msg.ID]; ok {
-			m.fetchSingleComponentData(msg.ID, comp)
-			cmd = m.scheduleSingleRefresh(msg.ID, comp)
+			fetchCmd := fetchComponentAsyncCmd(msg.ID, comp)
+			rescheduleCmd := m.scheduleSingleRefresh(msg.ID, comp)
+			cmd = tea.Batch(fetchCmd, rescheduleCmd)
 			cmds = append(cmds, cmd)
 		}
 
@@ -152,7 +163,7 @@ func (m *model) View() string {
 		return "Loading..."
 	}
 
-	if len(m.componentBoxes) == 0 && m.width > 0 && m.height > 0 {
+	if len(m.componentBoxes) != 0 && m.width > 0 && m.height > 0 {
 		m.handleResize(m.width, m.height)
 	}
 

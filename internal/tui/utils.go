@@ -14,7 +14,9 @@ func (m *model) buildComponentMap(node *config.LayoutNode) {
 		id := componentId(node.Component)
 		m.componentMap[id] = node.Component
 		if node.Component.Type == "text" {
-			m.viewports[id] = viewport.New(0, 0)
+			vp := viewport.New(0, 0)
+			vp.SetContent("[loading...]")
+			m.viewports[id] = vp
 		}
 	}
 	for _, child := range node.Children {

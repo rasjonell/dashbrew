@@ -8,8 +8,7 @@ import (
 )
 
 type refreshMsg struct {
-	ID   string
-	Comp *config.Component
+	ID string
 }
 
 func (m *model) scheduleRefreshes() []tea.Cmd {
@@ -33,8 +32,7 @@ func (m *model) scheduleSingleRefresh(id string, comp *config.Component) tea.Cmd
 	return func() tea.Msg {
 		time.Sleep(time.Duration(refreshInterval) * time.Second)
 		return refreshMsg{
-			ID:   id,
-			Comp: comp,
+			ID: id,
 		}
 	}
 }

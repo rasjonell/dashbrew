@@ -26,6 +26,7 @@ func (m *model) updateViewports() {
 		vp, exists := m.viewports[id]
 		if !exists {
 			vp = viewport.New(vpWidth, vpHeight)
+			vp.SetContent("[loading...]")
 		} else {
 			vp.Width = vpWidth
 			vp.Height = vpHeight
@@ -34,15 +35,19 @@ func (m *model) updateViewports() {
 		vp.YPosition = headerHeight
 		vp.MouseWheelEnabled = true
 
-		if output, dataOk := m.textOutputs[id]; dataOk {
-			if output.Error() != nil {
-				vp.SetContent(fmt.Sprintf("[error]\n%s", output.Error()))
-			} else {
-				vp.SetContent(lipgloss.NewStyle().Width(vp.Width).Render(output.Output()))
+		switch comp.Type {
+		case "text":
+			if output, dataOk := m.textOutputs[id]; dataOk {
+				if output.Error() != nil {
+					vp.SetContent(fmt.Sprintf("[error]\n%s", output.Error()))
+				} else {
+					vp.SetContent(lipgloss.NewStyle().Width(vp.Width).Render(output.Output()))
+				}
+			} else if vp.TotalLineCount() == 0 {
+				vp.SetContent("[loading...]")
 			}
-		} else {
-			vp.SetContent("[loading...]")
 		}
+
 		m.viewports[id] = vp
 	}
 	m.vpReady = true
