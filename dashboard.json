@@ -1,4 +1,9 @@
 {
+  "style": {
+    "borderType": "rounded",
+    "borderColor": "#ffffff",
+    "focusedBorderColor": "#00ff00"
+  },
   "layout": {
     "type": "container",
     "direction": "row",
@@ -31,7 +36,7 @@
               "title": "💾 Disk Usage (/)",
               "data": {
                 "source": "script",
-                "command": "df -h",
+                "command": "cat ./dashboard.json",
                 "refresh_interval": 180
               }
             }

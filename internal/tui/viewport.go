@@ -4,7 +4,6 @@ import (
 	"fmt"
 
 	"github.com/charmbracelet/bubbles/viewport"
-	"github.com/charmbracelet/lipgloss"
 )
 
 func (m *model) updateViewports() {
@@ -32,16 +31,16 @@ func (m *model) updateViewports() {
 			vp.Height = vpHeight
 		}
 
-		vp.YPosition = headerHeight
+		vp.YPosition = 1
 		vp.MouseWheelEnabled = true
 
 		switch comp.Type {
 		case "text":
 			if output, dataOk := m.textOutputs[id]; dataOk {
 				if output.Error() != nil {
-					vp.SetContent(fmt.Sprintf("[error]\n%s", output.Error()))
+					vp.SetContent(wrapContent(fmt.Sprintf("[error]\n%s", output.Error()), vp.Width))
 				} else {
-					vp.SetContent(lipgloss.NewStyle().Width(vp.Width).Render(output.Output()))
+					vp.SetContent(wrapContent(output.Output(), vp.Width))
 				}
 			} else if vp.TotalLineCount() == 0 {
 				vp.SetContent("[loading...]")

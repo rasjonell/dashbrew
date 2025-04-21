@@ -11,15 +11,7 @@ const (
 	borderSize = 1
 )
 
-var (
-	defaultBorder = lipgloss.RoundedBorder()
-	defaultStyle  = lipgloss.NewStyle().Border(defaultBorder)
-
-	focusedBorder = defaultBorder
-	focusedStyle  = lipgloss.NewStyle().Border(focusedBorder).BorderForeground(lipgloss.Color("#00ff00"))
-)
-
-func renderNode(
+func (m *model) renderNode(
 	node *config.LayoutNode,
 	width, height int,
 	renderComponent func(*config.Component, int, int) string,
@@ -32,7 +24,7 @@ func renderNode(
 		}
 		w, h := calcWidthHeight(width, height)
 
-		style := defaultStyle
+		style, focusedStyle, _ := m.getBorderStyle()
 		if componentId(node.Component) == focusedComponentId {
 			style = focusedStyle
 		}
@@ -70,7 +62,7 @@ func renderNode(
 				}
 				childHeight = height
 				offset += childWidth
-				rendered = append(rendered, renderNode(child, childWidth, childHeight, renderComponent, focusedComponentId))
+				rendered = append(rendered, m.renderNode(child, childWidth, childHeight, renderComponent, focusedComponentId))
 			} else {
 				if isLast {
 					childHeight = height - offset
@@ -79,7 +71,7 @@ func renderNode(
 				}
 				childWidth = width
 				offset += childHeight
-				rendered = append(rendered, renderNode(child, childWidth, childHeight, renderComponent, focusedComponentId))
+				rendered = append(rendered, m.renderNode(child, childWidth, childHeight, renderComponent, focusedComponentId))
 			}
 		}
 

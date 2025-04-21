@@ -146,7 +146,7 @@ func (m *model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				return m, nil
 			}
 		case key.Matches(msg, keys.Refresh):
-			if comp, ok := m.componentMap[m.focusedComponentId]; ok {
+			if comp, ok := m.componentMap[m.focusedComponentId]; ok && comp.Data.RefreshInterval > 0 {
 				return m, fetchComponentAsyncCmd(m.focusedComponentId, comp)
 			}
 		}
@@ -175,7 +175,7 @@ func (m *model) View() string {
 		m.handleResize(m.width, m.height)
 	}
 
-	return renderNode(
+	return m.renderNode(
 		m.cfg.Layout,
 		m.width, m.height,
 		m.getComponentContent,

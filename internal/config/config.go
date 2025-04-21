@@ -6,7 +6,14 @@ import (
 )
 
 type DashboardConfig struct {
-	Layout *LayoutNode `json:"layout"`
+	Style  *StyleConfig `json:"style,omitempty"`
+	Layout *LayoutNode  `json:"layout"`
+}
+
+type StyleConfig struct {
+	BorderType         string `json:"borderType,omitempty"`
+	BorderColor        string `json:"BorderColor,omitempty"`
+	FocusedBorderColor string `json:"focusedBorderColor,omitempty"`
 }
 
 type LayoutNode struct {

@@ -40,6 +40,11 @@ Dashbrew uses a `json` file in to define the layout and components.
 
 ```jsonc
 {
+  "style": {
+    "borderType": "rounded",
+    "borderColor": "#ffffff",
+    "focusedBorderColor": "#00ff00"
+  },
   "layout": {
     "type": "container", // "container" or "component"
     "direction": "row",  // "row" or "column" (for containers)
@@ -49,6 +54,14 @@ Dashbrew uses a `json` file in to define the layout and components.
   }
 }
 ```
+
+### Style Configuration:
+
+*All of the style configuration is optional, defaults will be used when not provided.*
+
+- `borderType`: `"rounded"` | `"thicc"` | `"double"` | `"hidden"` | `"normal"` | `"md"` | `"ascii"` | `"block"`
+- `borderColor`: any valid hex color (`#ffffff`, `#696969`)
+- `focusedBorderColor`: any valid hex color (`#00ff00`, `#694200`)
 
 ### Layout Nodes:
 
@@ -74,7 +87,6 @@ Dashbrew uses a `json` file in to define the layout and components.
   }
 }
 ```
-
 
 - `id`: (Optional) A unique ID. If omitted, an internal ID is generated.
 - `type`: The type of widget. Currently, only "text" is implemented (displays text content with scrolling).
