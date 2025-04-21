@@ -24,7 +24,7 @@
     *   `script`: Execute local shell commands/scripts and display their output.
     *   `api`: Fetch data from HTTP APIs and display the response body.
 *   **Terminal UI:** Built with the delightful [Bubble Tea](https://github.com/charmbracelet/bubbletea) framework.
-*   **Navigation:** Easily move focus between components using arrow keys or `hjkl`.
+*   **Navigation:** Easily move focus between components using arrow keys, `hjkl`, or your mouse.
 *   **Scrolling:** Scroll through component content that doesn't fit using the mouse wheel or `h`/`j`.
 *   **Text Wrapping:** Long lines within components are automatically wrapped to fit the component's width.
 *   **Auto-Refresh:** Configure components to automatically refresh their data at specified intervals.
@@ -38,14 +38,14 @@ Dashbrew uses a `json` file in to define the layout and components.
 
 **Structure:**
 
-```json
+```jsonc
 {
   "layout": {
     "type": "container", // "container" or "component"
     "direction": "row",  // "row" or "column" (for containers)
     "flex": 1,           // Optional: Relative size factor (default: 1)
-    "children": [ ... ], // Array of child layout nodes (for containers)
-    "component": { ... } // Component definition (for components)
+    "children": [ ], // Array of child layout nodes (for containers)
+    "component": { } // Component definition (for components)
   }
 }
 ```
@@ -61,7 +61,7 @@ Dashbrew uses a `json` file in to define the layout and components.
 ### Component Definition:
 
 **Structure:**
-```json
+```jsonc
 {
   "id": "unique-component-id", // Optional: A unique ID. If omitted, an internal ID is generated.
   "type": "text",             // Currently only "text" is supported
