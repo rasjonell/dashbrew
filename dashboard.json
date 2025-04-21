@@ -1,0 +1,72 @@
+{
+  "layout": {
+    "type": "container",
+    "direction": "row",
+    "children": [
+      {
+        "type": "container",
+        "direction": "column",
+        "flex": 1,
+        "children": [
+          {
+            "type": "component",
+            "component": {
+              "type": "text",
+              "title": "Clock",
+              "data": {
+                "source": "script",
+                "command": "date",
+                "refresh_interval": 1
+              }
+            }
+          },
+          {
+            "type": "component",
+            "flex": 1,
+            "component": {
+              "id": "jsonplaceholder",
+              "type": "text",
+              "title": "API Example (JSONPlaceholder)",
+              "data": {
+                "source": "api",
+                "url": "https://jsonplaceholder.typicode.com/posts/1",
+                "refresh_interval": 10
+              }
+            }
+          }
+        ]
+      },
+      {
+        "type": "container",
+        "direction": "column",
+        "flex": 1,
+        "children": [
+          {
+            "type": "component",
+            "component": {
+              "type": "text",
+              "title": "Date 1",
+              "data": {
+                "source": "script",
+                "command": "echo testasdjaslkdjaslkdjaslkdjalksdjaslkdjaslkdjaslkdjaslkdjaslkdjaslkdjaslkdjaslkdjaslkdj",
+                "refresh_interval": 1
+              }
+            }
+          },
+          {
+            "type": "component",
+            "flex": 1,
+            "component": {
+              "type": "text",
+              "title": "Calendar",
+              "data": {
+                "source": "script",
+                "command": "cal"
+              }
+            }
+          }
+        ]
+      }
+    ]
+  }
+}
