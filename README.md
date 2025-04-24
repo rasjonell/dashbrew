@@ -208,17 +208,18 @@ Example:
     - `shift + →` / `shift + L` - Move Right
     - `Left Click` - Focus Component Under Cursor
 - Focused Componet Actions:
+  - Every Component:
+    - `r` - Refresh Data Source
+  - Text Component:
     - Mouse Wheel - Scroll
     - `PgUp` / `b` / `u` - Scroll up.
-    - `PgDown` / `Space` / `d` - Scroll down.
-    - `r` - Refresh Data Source 
-- Lists (Todo and regular)
+    - `PgDown` / `Space` / `d` - Scroll down. 
+  - Lists (Todo and regular)
     - `/` - Filter the list (type, then `Enter` to apply, `Esc` to cancel)
-- Todo List:
+  - Todo List:
     - `a` - Add a new todo item (type, then `Enter` to save, `Esc` to cancel)
     - `Space` - Toggle done/undone for selected item
     - `d` / `Delete` / `Backspace` - Delete selected item
-
 - Quit: `Ctrl+C`
 
 ### 💡 Future Ideas
