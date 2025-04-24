@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"os"
 	"os/exec"
@@ -11,8 +12,13 @@ import (
 	"github.com/rasjonell/dashbrew/internal/tui"
 )
 
+var configPath string
+
 func main() {
-	cfg, err := config.LoadConfig("dashboard.json")
+	flag.StringVar(&configPath, "c", "dashboard.json", "Path to dashboard config.")
+	flag.Parse()
+
+	cfg, err := config.LoadConfig(configPath)
 	if err != nil {
 		fmt.Printf("Failed to load config: %v\n", err)
 		os.Exit(1)
