@@ -10,13 +10,13 @@ import (
 	"github.com/rasjonell/dashbrew/internal/data"
 )
 
-func (m *model) renderTextComponent(comp *config.Component, w, h int) string {
-	if !m.vpReady {
+func (m *model) renderViewportComponent(comp *config.Component, w, h int) string {
+	if !m.ready {
 		return lipgloss.Place(w, h, lipgloss.Center, lipgloss.Center, "[Initializing Viewport...]")
 	}
 
 	id := componentId(comp)
-	vp, ok := m.viewports[id]
+	vp, ok := m.textComponents[id]
 	if !ok {
 		return lipgloss.Place(w, h, lipgloss.Center, lipgloss.Center, "[Error: Viewport not found]")
 	}
@@ -27,7 +27,7 @@ func (m *model) renderTextComponent(comp *config.Component, w, h int) string {
 
 	vp.Width = w
 	vp.Height = max(0, h-combinedHeight)
-	m.viewports[id] = vp
+	m.textComponents[id] = vp
 
 	var footer string
 	if !(vp.AtTop() && vp.AtBottom()) {
@@ -43,17 +43,52 @@ func (m *model) renderTextComponent(comp *config.Component, w, h int) string {
 	)
 }
 
-func (m *model) setTextContent(id string, output data.FetchOutput) {
-	m.textOutputs[id] = output
+func (m *model) createViewportComponent(id string) {
+	vp := viewport.New(0, 0)
+	vp.SetContent("[loading...]")
+	m.textComponents[id] = vp
+}
 
-	if vp, ok := m.viewports[id]; ok && m.vpReady {
+func (m *model) updateViewportComponent(id string, compW, compH int) {
+	vpWidth := max(0, compW)
+	vpHeight := max(0, compH)
+
+	vp, exists := m.textComponents[id]
+	if !exists {
+		vp = viewport.New(vpWidth, vpHeight)
+		vp.SetContent("[loading...]")
+	} else {
+		vp.Width = vpWidth
+		vp.Height = vpHeight
+	}
+
+	vp.YPosition = 1
+	vp.MouseWheelEnabled = true
+
+	if output, dataOk := m.viewportOutputs[id]; dataOk {
+		if output.Error() != nil {
+			vp.SetContent(wrapContent(fmt.Sprintf("[error]\n%s", output.Error()), vp.Width))
+		} else {
+			vp.SetContent(wrapContent(output.Output(), vp.Width))
+		}
+	} else if vp.TotalLineCount() == 0 {
+		vp.SetContent("[loading...]")
+	}
+
+	m.textComponents[id] = vp
+}
+
+func (m *model) setViewportContent(id string, output data.FetchOutput) {
+	m.viewportOutputs[id] = output
+
+	if vp, ok := m.textComponents[id]; ok && m.ready {
 		if output.Error() != nil {
 			vp.SetContent(wrapContent(fmt.Sprintf("[error]\n%s", output.Error()), vp.Width))
 		} else {
 			vp.SetContent(wrapContent(output.Output(), vp.Width))
 		}
 		vp.GotoTop()
-		m.viewports[id] = vp
+		m.textComponents[id] = vp
 	}
 }
 
