@@ -1,0 +1,5 @@
++ create todo list component
++ create generic list component
+- create table component
+- configurable list/todo styles
++ update documentation

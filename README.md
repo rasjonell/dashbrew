@@ -1,5 +1,3 @@
-# Dashbrew  brews your terminal dashboard! 🧉
-
 ```
        /$$                     /$$       /$$                                        
       | $$                    | $$      | $$                                        
@@ -19,22 +17,51 @@
 
 ## ✨ Features
 
-*   **Configurable Layout:** Define complex dashboard layouts (rows, columns, flexible sizing)
-*   **Multiple Data Sources:**
-    *   `script`: Execute local shell commands/scripts and display their output.
-    *   `api`: Fetch data from HTTP APIs and display the response body.
-*   **Terminal UI:** Built with the delightful [Bubble Tea](https://github.com/charmbracelet/bubbletea) framework.
-*   **Navigation:** Easily move focus between components using arrow keys, `hjkl`, or your mouse.
-*   **Scrolling:** Scroll through component content that doesn't fit using the mouse wheel or `h`/`j`.
-*   **Text Wrapping:** Long lines within components are automatically wrapped to fit the component's width.
-*   **Auto-Refresh:** Configure components to automatically refresh their data at specified intervals.
-*   **Visual Focus Indicator:** Clearly see which component is currently selected.
+* **Configurable Layout:** Define complex dashboard layouts (rows, columns, flexible sizing)
+* **Multiple Data Sources:**
+    * `script`: Execute local shell commands/scripts and display their output.
+    * `api`: Fetch data from HTTP APIs and display the response body.
+    * `todo`: For ToDo lists, read and write a custom todo list text file.
+* **Component Types**
+    * _Text_: Scrollable, auto-wrapped text output.
+    * _List_: Display a list of items from scripts or APIs.
+    * _Todo_: Interactive todo list with add/remove and toggle done state support.
+* **Terminal UI:** Built with the delightful [Bubble Tea](https://github.com/charmbracelet/bubbletea) framework.
+* **Navigation:** Easily move focus between components using arrow keys, `hjkl`, or your mouse.
+* **Scrolling:** Scroll through component content that doesn't fit using the mouse wheel or `h`/`j`.
+* **Text Wrapping:** Long lines within components are automatically wrapped to fit the component's width.
+* **Auto-Refresh:** Configure components to automatically refresh their data at specified intervals.
+* **Visual Focus Indicator:** Clearly see which component is currently selected.
+* **Mouse Support:** Click to focus, scroll with the wheel.
 
 ---
 
+## 🚀 Installation & Usage (will be changed)
+
+1. Clone the repository:
+
+```bash
+git clone https://github.com/rasjonell/dashbrew.git # Replace with actual repo URL
+cd dashbrew
+```
+
+2. Build the binary:
+
+```bash
+go build -o dashbrew ./cmd/dashbrew
+```
+
+3. Create your `dashboard.json`
+
+4. Run:
+
+```bash
+./dashbrew -c your_dashboard.json
+```
+
 ## ⚙️ Configuration (`dashboard.json`)
 
-Dashbrew uses a `json` file in to define the layout and components.
+Dashbrew uses a `json` file in to define the layout and components. Find an example [here](./dashboard.json)
 
 **Structure:**
 
@@ -73,14 +100,14 @@ Dashbrew uses a `json` file in to define the layout and components.
 
 ### Component Definition:
 
-**Structure:**
+**Example Structure:**
 ```jsonc
 {
-  "id": "unique-component-id", // Optional: A unique ID. If omitted, an internal ID is generated.
-  "type": "text",             // Currently only "text" is supported
+  "id": "unique-component-id"
+  "type": "text",
   "title": "My Component Title",
   "data": {
-    "source": "script", // "script" or "api"
+    "source": "script",
     "command": "date +%Y-%m-%d", // Required if source is "script"
     "url": "https://api.example.com/status", // Required if source is "api"
     "refresh_interval": 5 // Optional: Refresh data every 5 seconds. Omit or 0 for no auto-refresh.
@@ -89,36 +116,87 @@ Dashbrew uses a `json` file in to define the layout and components.
 ```
 
 - `id`: (Optional) A unique ID. If omitted, an internal ID is generated.
-- `type`: The type of widget. Currently, only "text" is implemented (displays text content with scrolling).
+- `type`: The type of widget. Currently, `text`, `list`, and `todo` components are supported.
 - `title`: The title displayed in the component's header.
 - `data`: Defines where the component gets its content.
-    - `source`: "script" or "api".
+    - `source`: "script", "api", or todo list file path for components with type `todo` (example bellow).
     - `command`: (For script source) The command to execute.
     - `url`: (For api source) The URL to fetch via HTTP GET.
     - `refresh_interval`: (Optional) Time in seconds between data refreshes.
 
+### Text Component
 
-## 🚀 Installation & Usage (will be changed)
+Displays the output of a script or API as scrollable, wrapped text.
 
-1. Clone the repository:
-
-```bash
-git clone https://github.com/rasjonell/dashbrew.git # Replace with actual repo URL
-cd dashbrew
+```jsonc
+{
+  "type": "component",
+  "component": {
+    "type": "text",
+    "title": "System Info",
+    "data": {
+      "source": "script", // "script" or "api"
+      "command": "uname -a", // Required if source is "script"
+      "url": "https://api.example.com/status", // Required if source is "api"
+      "refresh_interval": 10 // Optional: seconds between refreshes
+    }
+  }
+}
 ```
 
-2. Build the binary:
+### List Component
 
-```bash
-go build -o dashbrew ./cmd/dashbrew
+Displays a list of items, with filtering and selection.
+
+- If `source` is `"script"`, each line of output is an item.
+- If `source` is `"api"`, the API must return a JSON array of strings.
+
+```jsonc
+{
+  "type": "component",
+  "component": {
+    "type": "list",
+    "title": "Recent Logs",
+    "data": {
+      "source": "script", // "script" or "api"
+      "command": "cat /var/log/syslog | tail -n 10", // For script
+      "url": "https://api.example.com/items", // For api, must return ["item1", "item2", ...]
+      "refresh_interval": 5 // Optional
+    }
+  }
+}
 ```
 
-3. Create your `dashboard.json`
+### Todo Component
 
-4. Run:
+Displays and manages a todo list stored in a local file.
+You can add, toggle, and delete items interactively.
 
-```bash
-./dashbrew
+```jsonc
+{
+  "type": "component",
+  "component": {
+    "type": "todo",
+    "title": "My Todos",
+    "data": {
+      "source": "file",
+      "path": "./todos.txt"
+    }
+  }
+}
+```
+
+#### Todo File Format
+
+Each line represents a todo item:
+  - `-` means to do
+  - `+` means done
+
+Example:
+```
+ + learn HTMX
+ + rise & grind
+ - profit
 ```
 
 ## ⌨️ Keybindings
@@ -134,7 +212,12 @@ go build -o dashbrew ./cmd/dashbrew
     - `PgUp` / `b` / `u` - Scroll up.
     - `PgDown` / `Space` / `d` - Scroll down.
     - `r` - Refresh Data Source 
-- Quit: `Ctrl+C`, `q`, `Esc`
+- Todo List:
+    - `a` - Add a new todo item (type, then `Enter` to save, `Esc` to cancel)
+    - `Space` - Toggle done/undone for selected item
+    - `d` / `Delete` / `Backspace` - Delete selected item
+
+- Quit: `Ctrl+C`
 
 ### 💡 Future Ideas
 

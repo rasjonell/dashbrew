@@ -15,20 +15,6 @@
         "children": [
           {
             "type": "component",
-            "flex": 1,
-            "component": {
-              "id": "clock",
-              "type": "text",
-              "title": "🕒 Clock",
-              "data": {
-                "source": "script",
-                "command": "date",
-                "refresh_interval": 1
-              }
-            }
-          },
-          {
-            "type": "component",
             "flex": 3,
             "component": {
               "id": "disk",
@@ -36,8 +22,7 @@
               "title": "💾 Disk Usage (/)",
               "data": {
                 "source": "script",
-                "command": "cat ./dashboard.json",
-                "refresh_interval": 180
+                "command": "cat ./dashboard.json"
               }
             }
           },
@@ -45,12 +30,13 @@
             "type": "component",
             "flex": 2,
             "component": {
-              "id": "calendar",
-              "type": "text",
-              "title": "📅 Calendar",
+              "id": "processes",
+              "type": "list",
+              "title": "📜 Processes (Top 5 CPU)",
               "data": {
                 "source": "script",
-                "command": "cal"
+                "command": "./list.sh",
+                "refresh_interval": 2
               }
             }
           }
@@ -63,7 +49,7 @@
         "children": [
           {
             "type": "component",
-            "flex": 2,
+            "flex": 1,
             "component": {
               "id": "weather",
               "type": "text",
@@ -77,29 +63,13 @@
           },
           {
             "type": "component",
-            "flex": 2,
+            "flex": 3,
             "component": {
-              "id": "uptime",
-              "type": "text",
-              "title": "⏱️ Uptime",
+              "id": "personal",
+              "type": "todo",
+              "title": "📙 Personal ToDo List",
               "data": {
-                "source": "script",
-                "command": "uptime -p",
-                "refresh_interval": 60
-              }
-            }
-          },
-          {
-            "type": "component",
-            "flex": 2,
-            "component": {
-              "id": "quote",
-              "type": "text",
-              "title": "❝ Quote of the Day",
-              "data": {
-                "source": "script",
-                "command": "./quote.sh",
-                "refresh_interval": 3600
+                "source": "./personal.txt"
               }
             }
           },
@@ -107,27 +77,11 @@
             "type": "component",
             "flex": 3,
             "component": {
-              "id": "memory",
-              "type": "text",
-              "title": "🧠 Memory",
+              "id": "todo",
+              "type": "todo",
+              "title": "📕 Dashbrew ToDo List",
               "data": {
-                "source": "script",
-                "command": "free -h",
-                "refresh_interval": 30
-              }
-            }
-          },
-          {
-            "type": "component",
-            "flex": 2,
-            "component": {
-              "id": "advice",
-              "type": "text",
-              "title": "💡 Advice",
-              "data": {
-                "source": "script",
-                "command": "./advice.sh",
-                "refresh_interval": 30
+                "source": "./todo.txt"
               }
             }
           }
