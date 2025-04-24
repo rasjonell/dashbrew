@@ -103,7 +103,7 @@ Dashbrew uses a `json` file in to define the layout and components. Find an exam
 **Example Structure:**
 ```jsonc
 {
-  "id": "unique-component-id"
+  "id": "unique-component-id",
   "type": "text",
   "title": "My Component Title",
   "data": {
@@ -212,6 +212,8 @@ Example:
     - `PgUp` / `b` / `u` - Scroll up.
     - `PgDown` / `Space` / `d` - Scroll down.
     - `r` - Refresh Data Source 
+- Lists (Todo and regular)
+    - `/` - Filter the list (type, then `Enter` to apply, `Esc` to cancel)
 - Todo List:
     - `a` - Add a new todo item (type, then `Enter` to save, `Esc` to cancel)
     - `Space` - Toggle done/undone for selected item
@@ -221,7 +223,7 @@ Example:
 
 ### 💡 Future Ideas
 
-- More component types (charts, gauges, lists).
+- More component types (charts, gauges).
 - More data sources
 - Data parsing/transformation (e.g., extracting values from JSON).
 - Customizable themes/colors.
