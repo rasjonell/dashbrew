@@ -11,6 +11,25 @@ const (
 	borderSize = 1
 )
 
+func (m *model) buildComponentMap(node *config.LayoutNode) {
+	if node.Type == "component" && node.Component != nil {
+		id := componentId(node.Component)
+		m.componentMap[id] = node.Component
+		switch node.Component.Type {
+		case "text":
+			m.createViewportComponent(id)
+		case "list":
+			m.createListComponent(id, node.Component)
+		case "todo":
+			m.createTodoComponent(id, node.Component)
+		}
+	}
+
+	for _, child := range node.Children {
+		m.buildComponentMap(child)
+	}
+}
+
 func (m *model) renderNode(
 	node *config.LayoutNode,
 	width, height int,
@@ -89,7 +108,11 @@ func (m *model) renderNode(
 func (m *model) getComponentContent(component *config.Component, width, height int) string {
 	switch component.Type {
 	case "text":
-		return m.renderTextComponent(component, width, height)
+		return m.renderViewportComponent(component, width, height)
+	case "list":
+		return m.renderListComponent(component, width, height)
+	case "todo":
+		return m.renderTodoComponent(component, width, height)
 	default:
 		// Unknown type
 		title := component.Title

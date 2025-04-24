@@ -2,6 +2,7 @@ package tui
 
 import (
 	"github.com/charmbracelet/bubbles/key"
+	"github.com/charmbracelet/bubbles/list"
 	"github.com/charmbracelet/bubbles/viewport"
 	"github.com/charmbracelet/bubbletea"
 	"github.com/rasjonell/dashbrew/internal/config"
@@ -11,19 +12,22 @@ import (
 type model struct {
 	cfg *config.DashboardConfig
 
-	width       int
-	height      int
-	initialized bool
-
-	vpReady   bool
-	viewports map[string]viewport.Model
-
-	textOutputs  map[string]data.FetchOutput
-	componentMap map[string]*config.Component
-
-	componentBoxes     map[string]*boundingBox
-	navMap             map[string]*navigationMap
+	width              int
+	height             int
+	ready              bool
+	isAdding           bool
+	initialized        bool
 	focusedComponentId string
+
+	additionInput   string
+	viewportOutputs map[string]data.FetchOutput
+
+	componentBoxes map[string]*boundingBox
+	navMap         map[string]*navigationMap
+	componentMap   map[string]*config.Component
+
+	listComponents map[string]list.Model
+	textComponents map[string]viewport.Model
 }
 
 type componentOutput struct {
@@ -32,17 +36,23 @@ type componentOutput struct {
 }
 
 type keyMap struct {
-	Quit    key.Binding
-	Up      key.Binding
-	Down    key.Binding
-	Left    key.Binding
-	Right   key.Binding
-	Refresh key.Binding
+	Quit      key.Binding
+	Up        key.Binding
+	Down      key.Binding
+	Left      key.Binding
+	Right     key.Binding
+	Space     key.Binding
+	Enter     key.Binding
+	Esc       key.Binding
+	Add       key.Binding
+	Refresh   key.Binding
+	Backspace key.Binding
+	Delete    key.Binding
 }
 
 var keys = keyMap{
 	Quit: key.NewBinding(
-		key.WithKeys("ctrl+c", "q", "esc"),
+		key.WithKeys("ctrl+c"),
 	),
 	Up: key.NewBinding(
 		key.WithKeys("shift+up", "K"),
@@ -56,24 +66,44 @@ var keys = keyMap{
 	Right: key.NewBinding(
 		key.WithKeys("shift+right", "L"),
 	),
+	Space: key.NewBinding(
+		key.WithKeys(" "),
+	),
+	Enter: key.NewBinding(
+		key.WithKeys("enter"),
+	),
+	Esc: key.NewBinding(
+		key.WithKeys("esc"),
+	),
+	Add: key.NewBinding(
+		key.WithKeys("a", "A"),
+	),
 	Refresh: key.NewBinding(
 		key.WithKeys("r", "R"),
+	),
+	Backspace: key.NewBinding(
+		key.WithKeys(tea.KeyBackspace.String()),
+	),
+	Delete: key.NewBinding(
+		key.WithKeys(tea.KeyBackspace.String(), tea.KeyDelete.String(), "d", "D"),
 	),
 }
 
 func New(cfg *config.DashboardConfig) tea.Model {
 	return &model{
 		cfg:         cfg,
+		ready:       false,
+		isAdding:    false,
 		initialized: false,
 
-		vpReady:   false,
-		viewports: make(map[string]viewport.Model),
-
-		textOutputs:  make(map[string]data.FetchOutput),
-		componentMap: make(map[string]*config.Component),
+		viewportOutputs: make(map[string]data.FetchOutput),
 
 		componentBoxes: make(map[string]*boundingBox),
 		navMap:         make(map[string]*navigationMap),
+		componentMap:   make(map[string]*config.Component),
+
+		listComponents: make(map[string]list.Model),
+		textComponents: make(map[string]viewport.Model),
 	}
 }
 
@@ -96,6 +126,11 @@ func (m *model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	var cmd tea.Cmd
 	var cmds []tea.Cmd
 
+	focusedComponentType := ""
+	if comp, ok := m.componentMap[m.focusedComponentId]; ok {
+		focusedComponentType = comp.Type
+	}
+
 	switch msg := msg.(type) {
 	case tea.WindowSizeMsg:
 		m.handleResize(msg.Width, msg.Height)
@@ -104,7 +139,14 @@ func (m *model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		if comp, ok := m.componentMap[msg.ID]; ok {
 			switch comp.Type {
 			case "text":
-				m.setTextContent(msg.ID, msg.Result)
+				m.setViewportContent(msg.ID, msg.Result)
+			case "list":
+				cmd = m.setListContent(msg.ID, msg.Result, comp)
+				cmds = append(cmds, cmd)
+			case "todo":
+				if todoRes, ok := msg.Result.(*todoFetchOutput); ok {
+					m.setTodoContent(msg.ID, todoRes.Items())
+				}
 			}
 		}
 
@@ -122,40 +164,94 @@ func (m *model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 
 	case tea.KeyMsg:
-		switch {
-		case key.Matches(msg, keys.Quit):
+		if key.Matches(msg, keys.Quit) {
 			return m, tea.Quit
-		case key.Matches(msg, keys.Up):
-			if nav, ok := m.navMap[m.focusedComponentId]; ok && nav.Up != "" {
-				m.focusedComponentId = nav.Up
+		}
+
+		if m.isAdding {
+			switch {
+			case key.Matches(msg, keys.Esc):
+				m.isAdding = false
+				m.additionInput = ""
+				return m, nil
+			case key.Matches(msg, keys.Backspace):
+				if len(m.additionInput) > 0 {
+					m.additionInput = m.additionInput[:len(m.additionInput)-1]
+				}
+				return m, nil
+			case key.Matches(msg, keys.Enter):
+				switch focusedComponentType {
+				case "todo":
+					m.addNewTodo()
+					return m, nil
+				}
+			default:
+				if msg.Type == tea.KeyRunes {
+					m.additionInput += msg.String()
+				} else if msg.Type == tea.KeySpace {
+					m.additionInput += " "
+				}
 				return m, nil
 			}
-		case key.Matches(msg, keys.Down):
-			if nav, ok := m.navMap[m.focusedComponentId]; ok && nav.Down != "" {
-				m.focusedComponentId = nav.Down
-				return m, nil
-			}
-		case key.Matches(msg, keys.Left):
-			if nav, ok := m.navMap[m.focusedComponentId]; ok && nav.Left != "" {
-				m.focusedComponentId = nav.Left
-				return m, nil
-			}
-		case key.Matches(msg, keys.Right):
-			if nav, ok := m.navMap[m.focusedComponentId]; ok && nav.Right != "" {
-				m.focusedComponentId = nav.Right
-				return m, nil
-			}
-		case key.Matches(msg, keys.Refresh):
-			if comp, ok := m.componentMap[m.focusedComponentId]; ok && comp.Data.RefreshInterval > 0 {
-				return m, fetchComponentAsyncCmd(m.focusedComponentId, comp)
+		} else {
+			switch {
+			case key.Matches(msg, keys.Up):
+				if nav, ok := m.navMap[m.focusedComponentId]; ok && nav.Up != "" {
+					m.focusedComponentId = nav.Up
+					return m, nil
+				}
+			case key.Matches(msg, keys.Down):
+				if nav, ok := m.navMap[m.focusedComponentId]; ok && nav.Down != "" {
+					m.focusedComponentId = nav.Down
+					return m, nil
+				}
+			case key.Matches(msg, keys.Left):
+				if nav, ok := m.navMap[m.focusedComponentId]; ok && nav.Left != "" {
+					m.focusedComponentId = nav.Left
+					return m, nil
+				}
+			case key.Matches(msg, keys.Right):
+				if nav, ok := m.navMap[m.focusedComponentId]; ok && nav.Right != "" {
+					m.focusedComponentId = nav.Right
+					return m, nil
+				}
+			case key.Matches(msg, keys.Refresh):
+				if comp, ok := m.componentMap[m.focusedComponentId]; ok && comp.Data.RefreshInterval > 0 {
+					return m, fetchComponentAsyncCmd(m.focusedComponentId, comp)
+				}
+			case key.Matches(msg, keys.Add):
+				if comp, ok := m.componentMap[m.focusedComponentId]; ok && supportsAddition(comp.Type) {
+					m.isAdding = true
+					m.additionInput = ""
+					return m, nil
+				}
 			}
 		}
-	}
 
-	if comp, ok := m.componentMap[m.focusedComponentId]; ok && comp.Type == "text" {
-		if vp, vpOk := m.viewports[m.focusedComponentId]; vpOk {
-			m.viewports[m.focusedComponentId], cmd = vp.Update(msg)
-			cmds = append(cmds, cmd)
+		if m.ready {
+			switch focusedComponentType {
+			case "text":
+				if vp, vpOk := m.textComponents[m.focusedComponentId]; vpOk {
+					m.textComponents[m.focusedComponentId], cmd = vp.Update(msg)
+					cmds = append(cmds, cmd)
+				}
+			case "list":
+				if listModel, listOk := m.listComponents[m.focusedComponentId]; listOk {
+					m.listComponents[m.focusedComponentId], cmd = listModel.Update(msg)
+					cmds = append(cmds, cmd)
+				}
+			case "todo":
+				if listModel, listOk := m.listComponents[m.focusedComponentId]; listOk {
+					m.listComponents[m.focusedComponentId], cmd = listModel.Update(msg)
+					cmds = append(cmds, cmd)
+					switch {
+					case key.Matches(msg, keys.Space):
+						m.toggleTodoState(listModel)
+					case key.Matches(msg, keys.Delete):
+						m.removeTodo(listModel)
+					}
+				}
+			}
 		}
 	}
 
@@ -167,7 +263,7 @@ func (m *model) View() string {
 		return "No config loaded."
 	}
 
-	if m.width == 0 || m.height == 0 {
+	if m.width == 0 || m.height == 0 || !m.ready {
 		return "Loading..."
 	}
 

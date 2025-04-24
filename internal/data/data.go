@@ -4,10 +4,16 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"os"
 	"os/exec"
 	"strings"
 	"time"
 )
+
+type TodoOutput struct {
+	Done  bool
+	Title string
+}
 
 type FetchOutput interface {
 	Error() error
@@ -75,4 +81,38 @@ func RunAPI(url string) FetchOutput {
 	}
 
 	return newFetchOutput(string(bodyBytes), nil)
+}
+
+func ReadTodoFile(path string) ([]*TodoOutput, error) {
+	bytes, err := os.ReadFile(path)
+	if err != nil {
+		return nil, err
+	}
+
+	var items []*TodoOutput
+	for _, line := range strings.Split(string(bytes), "\n") {
+		line = strings.TrimSpace(line)
+		if len(line) < 2 {
+			continue
+		}
+
+		done := line[0] == '+'
+		title := strings.TrimSpace(line[1:])
+		items = append(items, &TodoOutput{Title: title, Done: done})
+	}
+
+	return items, nil
+}
+
+func WriteTodoFile(path string, items []*TodoOutput) error {
+	var lines []string
+	for _, item := range items {
+		prefix := "-"
+		if item.Done {
+			prefix = "+"
+		}
+		lines = append(lines, fmt.Sprintf("%s %s", prefix, item.Title))
+	}
+
+	return os.WriteFile(path, []byte(strings.Join(lines, "\n")), 0644)
 }

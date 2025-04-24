@@ -2,27 +2,12 @@ package tui
 
 import (
 	"fmt"
+	"slices"
 
-	"github.com/charmbracelet/bubbles/viewport"
 	"github.com/rasjonell/dashbrew/internal/config"
 )
 
-const nbsp = 0xA0
-
-func (m *model) buildComponentMap(node *config.LayoutNode) {
-	if node.Type == "component" && node.Component != nil {
-		id := componentId(node.Component)
-		m.componentMap[id] = node.Component
-		if node.Component.Type == "text" {
-			vp := viewport.New(0, 0)
-			vp.SetContent("[loading...]")
-			m.viewports[id] = vp
-		}
-	}
-	for _, child := range node.Children {
-		m.buildComponentMap(child)
-	}
-}
+var additionSupportedComponents = []string{"todo"}
 
 func componentId(comp *config.Component) string {
 	id := comp.ID
@@ -40,4 +25,11 @@ func getFlex(node *config.LayoutNode) int {
 	}
 
 	return flex
+}
+
+func supportsAddition(compType string) bool {
+	return slices.Index(
+		additionSupportedComponents,
+		compType,
+	) > -1
 }

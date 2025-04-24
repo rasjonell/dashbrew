@@ -25,7 +25,7 @@ func (m *model) handleResize(msgWidth, msgHeight int) {
 	w, h := evenWidthHeight(msgWidth, msgHeight)
 	m.width = w
 	m.height = h
-	m.vpReady = false
+	m.ready = false
 
 	if m.cfg == nil || m.cfg.Layout == nil {
 		return
@@ -34,7 +34,22 @@ func (m *model) handleResize(msgWidth, msgHeight int) {
 	m.componentBoxes = make(map[string]*boundingBox)
 	calculateBoundingBoxes(m.cfg.Layout, 0, 0, w, h, m.componentBoxes)
 	m.navMap = calculateNavigationMap(m.componentBoxes)
-	m.updateViewports()
+
+	for id, comp := range m.componentMap {
+		if box, ok := m.componentBoxes[id]; ok {
+			compW, compH := calcWidthHeight(box.W, box.H)
+
+			switch comp.Type {
+			case "text":
+				m.updateViewportComponent(id, compW, compH)
+			case "list", "todo":
+				m.updateListComponent(id, compW, compH)
+			}
+		}
+
+	}
+
+	m.ready = true
 
 	if _, exists := m.componentBoxes[m.focusedComponentId]; !exists {
 		m.focusedComponentId = findFirstComponent(m.cfg.Layout)
