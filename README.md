@@ -179,8 +179,7 @@ You can add, toggle, and delete items interactively.
     "type": "todo",
     "title": "My Todos",
     "data": {
-      "source": "file",
-      "path": "./todos.txt"
+      "source": "./todos.txt"
     }
   }
 }
