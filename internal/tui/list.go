@@ -31,18 +31,23 @@ func (m *model) renderListComponent(comp *config.Component, w, h int) string {
 		return lipgloss.Place(w, h, lipgloss.Center, lipgloss.Center, "[Error: List not found]")
 	}
 
-	return listModel.View()
+  _, _, border := m.getBorderStyle()
+  header := renderComponentHeader(comp.Title, border)
+  listModel.SetHeight(max(0, h - lipgloss.Height(header)))
+  m.listComponents[id] = listModel
+
+	return lipgloss.JoinVertical(lipgloss.Left,header, listModel.View())
 }
 
-func (m *model) createListComponent(id string, comp *config.Component) {
+func (m *model) createListComponent(id string) {
 	delegate := list.NewDefaultDelegate()
 	delegate.ShowDescription = false
 
 	// TODO: styles
 	newList := list.New(nil, delegate, 0, 0)
-	newList.Title = comp.Title
+  newList.SetShowTitle(false)
 	newList.SetShowHelp(false)
-	newList.SetShowStatusBar(true)
+	newList.SetShowStatusBar(false)
 	newList.SetFilteringEnabled(true)
 	m.listComponents[id] = newList
 }

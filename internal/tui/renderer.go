@@ -19,9 +19,9 @@ func (m *model) buildComponentMap(node *config.LayoutNode) {
 		case "text":
 			m.createViewportComponent(id)
 		case "list":
-			m.createListComponent(id, node.Component)
+			m.createListComponent(id)
 		case "todo":
-			m.createTodoComponent(id, node.Component)
+			m.createTodoComponent(id)
 		}
 	}
 

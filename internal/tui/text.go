@@ -22,7 +22,7 @@ func (m *model) renderViewportComponent(comp *config.Component, w, h int) string
 	}
 
 	_, _, border := m.getBorderStyle()
-	header := renderViewportHeader(comp.Title, border)
+	header := renderComponentHeader(comp.Title, border)
 	combinedHeight := lipgloss.Height(header) + 1
 
 	vp.Width = w
@@ -90,14 +90,6 @@ func (m *model) setViewportContent(id string, output data.FetchOutput) {
 		vp.GotoTop()
 		m.textComponents[id] = vp
 	}
-}
-
-func renderViewportHeader(title string, border lipgloss.Border) string {
-	style := lipgloss.NewStyle().Border(border, false, true, true, false).Padding(0, 1)
-	if title == "" {
-		title = "Untitled"
-	}
-	return style.Render(title)
 }
 
 func renderViewportFooter(vp viewport.Model, vpWidth int) string {
