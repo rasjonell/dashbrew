@@ -4,58 +4,72 @@ import (
 	"fmt"
 
 	"github.com/charmbracelet/lipgloss"
+	"github.com/rasjonell/dashbrew/internal/components"
 	"github.com/rasjonell/dashbrew/internal/config"
 )
 
-const (
-	borderSize = 1
-)
-
 func (m *model) buildComponentMap(node *config.LayoutNode) {
-	if node.Type == "component" && node.Component != nil {
-		id := componentId(node.Component)
-		m.componentMap[id] = node.Component
-		switch node.Component.Type {
-		case "text":
-			m.createViewportComponent(id)
-		case "list":
-			m.createListComponent(id)
-		case "todo":
-			m.createTodoComponent(id)
-		}
+	if node == nil {
+		return
 	}
 
-	for _, child := range node.Children {
-		m.buildComponentMap(child)
+	switch node.Type {
+	case "component":
+		if node.Component != nil {
+			comp := components.NewComponent(node.Component, m.cfg.Style)
+			m.components[comp.ID()] = comp
+		}
+	case "container":
+		for _, child := range node.Children {
+			m.buildComponentMap(child)
+		}
 	}
 }
 
 func (m *model) renderNode(
 	node *config.LayoutNode,
 	width, height int,
-	renderComponent func(*config.Component, int, int) string,
 	focusedComponentId string,
 ) string {
+	if node == nil {
+		return lipgloss.NewStyle().Width(width).Height(height).Render("")
+	}
+
 	switch node.Type {
 	case "component":
 		if node.Component == nil {
-			return ""
+			return lipgloss.NewStyle().Width(width).Height(height).Render("[Error: nil componnet config]")
 		}
-		w, h := calcWidthHeight(width, height)
-
-		style, focusedStyle, _ := m.getBorderStyle()
-		if componentId(node.Component) == focusedComponentId {
-			style = focusedStyle
+		id := components.ComponentId(node.Component)
+		comp, exists := m.components[id]
+		if !exists {
+			return lipgloss.NewStyle().Width(width).Height(height).Render("[Error: component %s not found]", id)
 		}
 
-		return style.
-			Width(w).
-			Height(h).
-			Render(renderComponent(node.Component, w, h))
+		isFocused := id == focusedComponentId
+
+		if isFocused && m.isAdding && comp.SupportsAdd() {
+			_, focusedStyle, _ := components.GetBorderStyle(m.cfg.Style)
+			borderStyle := focusedStyle
+
+			addInput := comp.GetAddInput()
+			prompt := fmt.Sprintf("New ToDo: %s_", addInput)
+
+			w, h := components.CalcWidthHeight(width, height)
+			addOverlayContent := lipgloss.Place(w, h,
+				lipgloss.Center, lipgloss.Center,
+				prompt,
+			)
+
+			return borderStyle.Width(w).Height(h).Render(addOverlayContent)
+
+		}
+
+		return comp.View(width, height, isFocused)
 
 	case "container":
 		if len(node.Children) == 0 {
-			return ""
+			return lipgloss.NewStyle().Width(width).Height(height).Render("")
 		}
 
 		totalFlex := 0
@@ -63,10 +77,10 @@ func (m *model) renderNode(
 			totalFlex += getFlex(child)
 		}
 
-		var rendered []string
-
 		offset := 0
 		numChildren := len(node.Children)
+
+		var rendered []string
 
 		for i, child := range node.Children {
 			flex := getFlex(child)
@@ -74,24 +88,24 @@ func (m *model) renderNode(
 
 			var childWidth, childHeight int
 			if node.Direction == "row" {
+				childHeight = height
 				if isLast {
 					childWidth = width - offset
 				} else {
 					childWidth = width * flex / totalFlex
 				}
-				childHeight = height
 				offset += childWidth
-				rendered = append(rendered, m.renderNode(child, childWidth, childHeight, renderComponent, focusedComponentId))
 			} else {
+				childWidth = width
 				if isLast {
 					childHeight = height - offset
 				} else {
 					childHeight = height * flex / totalFlex
 				}
-				childWidth = width
 				offset += childHeight
-				rendered = append(rendered, m.renderNode(child, childWidth, childHeight, renderComponent, focusedComponentId))
 			}
+
+			rendered = append(rendered, m.renderNode(child, childWidth, childHeight, focusedComponentId))
 		}
 
 		if node.Direction == "row" {
@@ -101,41 +115,14 @@ func (m *model) renderNode(
 		return lipgloss.JoinVertical(lipgloss.Left, rendered...)
 
 	default:
-		return ""
+		w, h := components.CalcWidthHeight(width, height)
+		return lipgloss.NewStyle().
+			Width(w).
+			Height(h).
+			Border(lipgloss.NormalBorder()).
+			BorderForeground(lipgloss.Color("#ff0000")).
+			Render(fmt.Sprintf("[Unknown Layout Type: %s]", node.Type))
 	}
-}
-
-func (m *model) getComponentContent(component *config.Component, width, height int) string {
-	switch component.Type {
-	case "text":
-		return m.renderViewportComponent(component, width, height)
-	case "list":
-		return m.renderListComponent(component, width, height)
-	case "todo":
-		return m.renderTodoComponent(component, width, height)
-	default:
-		// Unknown type
-		title := component.Title
-		if title == "" {
-			title = "[Untitled]"
-		}
-		return lipgloss.Place(width, height, lipgloss.Center, lipgloss.Center,
-			fmt.Sprintf("[unknown type: %s]\n%s", component.Type, title),
-		)
-	}
-}
-
-func calcWidthHeight(w, h int) (int, int) {
-	innerWidth := w - 2*(borderSize)
-	if innerWidth < 1 {
-		innerWidth = 1
-	}
-	innerHeight := h - 2*(borderSize)
-	if innerHeight < 1 {
-		innerHeight = 1
-	}
-
-	return innerWidth, innerHeight
 }
 
 func evenWidthHeight(w, h int) (newW, newH int) {

@@ -10,11 +10,6 @@ import (
 	"time"
 )
 
-type TodoOutput struct {
-	Done  bool
-	Title string
-}
-
 type FetchOutput interface {
 	Error() error
 	Output() string
@@ -25,15 +20,15 @@ type fetchOutput struct {
 	output string
 }
 
-func (f *fetchOutput) Output() string {
-	return f.output
+type TodoOutput struct {
+	Done  bool
+	Title string
 }
 
-func (f *fetchOutput) Error() error {
-	return f.err
-}
+func (f *fetchOutput) Error() error   { return f.err }
+func (f *fetchOutput) Output() string { return f.output }
 
-func newFetchOutput(output string, err error) *fetchOutput {
+func NewFetchOutput(output string, err error) *fetchOutput {
 	return &fetchOutput{
 		err:    err,
 		output: output,
@@ -43,17 +38,17 @@ func newFetchOutput(output string, err error) *fetchOutput {
 func RunScript(command string) FetchOutput {
 	parts := strings.Fields(command)
 	if len(parts) == 0 {
-		return newFetchOutput("", fmt.Errorf("Empty command"))
+		return NewFetchOutput("", fmt.Errorf("Empty command"))
 	}
 
 	cmd := exec.Command(parts[0], parts[1:]...)
 	out, err := cmd.CombinedOutput()
-	return newFetchOutput(string(out), err)
+	return NewFetchOutput(string(out), err)
 }
 
 func RunAPI(url string) FetchOutput {
 	if url == "" {
-		return newFetchOutput("", fmt.Errorf("Empty URL"))
+		return NewFetchOutput("", fmt.Errorf("Empty URL"))
 	}
 
 	client := &http.Client{
@@ -62,13 +57,13 @@ func RunAPI(url string) FetchOutput {
 
 	resp, err := client.Get(url)
 	if err != nil {
-		return newFetchOutput("", fmt.Errorf("HTTP GET Error: %w", err))
+		return NewFetchOutput("", fmt.Errorf("HTTP GET Error: %w", err))
 	}
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
 		bodyBytes, _ := io.ReadAll(resp.Body)
-		return newFetchOutput("", fmt.Errorf("API Request Failed: status %d %s\n%s",
+		return NewFetchOutput("", fmt.Errorf("API Request Failed: status %d %s\n%s",
 			resp.StatusCode,
 			http.StatusText(resp.StatusCode),
 			string(bodyBytes),
@@ -77,10 +72,10 @@ func RunAPI(url string) FetchOutput {
 
 	bodyBytes, err := io.ReadAll(resp.Body)
 	if err != nil {
-		return newFetchOutput("", fmt.Errorf("Failed to read response body: %w", err))
+		return NewFetchOutput("", fmt.Errorf("Failed to read response body: %w", err))
 	}
 
-	return newFetchOutput(string(bodyBytes), nil)
+	return NewFetchOutput(string(bodyBytes), nil)
 }
 
 func ReadTodoFile(path string) ([]*TodoOutput, error) {

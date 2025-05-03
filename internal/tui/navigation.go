@@ -3,6 +3,7 @@ package tui
 import (
 	"math"
 
+	"github.com/rasjonell/dashbrew/internal/components"
 	"github.com/rasjonell/dashbrew/internal/config"
 )
 
@@ -23,32 +24,24 @@ type boundingBox struct {
 
 func (m *model) handleResize(msgWidth, msgHeight int) {
 	w, h := evenWidthHeight(msgWidth, msgHeight)
+	if w == m.width && h == m.height && m.ready {
+		return
+	}
+
 	m.width = w
 	m.height = h
 	m.ready = false
 
-	if m.cfg == nil || m.cfg.Layout == nil {
+	if m.cfg == nil || m.cfg.Layout == nil || len(m.components) == 0 {
+		m.ready = true
 		return
 	}
 
-	m.componentBoxes = make(map[string]*boundingBox)
-	calculateBoundingBoxes(m.cfg.Layout, 0, 0, w, h, m.componentBoxes)
+	newBoxes := make(map[string]*boundingBox)
+	calculateBoundingBoxes(m.cfg.Layout, 0, 0, w, h, newBoxes)
+	m.componentBoxes = newBoxes
+
 	m.navMap = calculateNavigationMap(m.componentBoxes)
-
-	for id, comp := range m.componentMap {
-		if box, ok := m.componentBoxes[id]; ok {
-			compW, compH := calcWidthHeight(box.W, box.H)
-
-			switch comp.Type {
-			case "text":
-				m.updateViewportComponent(id, compW, compH)
-			case "list", "todo":
-				m.updateListComponent(id, compW, compH)
-			}
-		}
-
-	}
-
 	m.ready = true
 
 	if _, exists := m.componentBoxes[m.focusedComponentId]; !exists {
@@ -65,12 +58,18 @@ func (m *model) focusClicked(x, y int) {
 	}
 }
 
+func (m *model) tryFocus(targetID string) {
+	if targetComp, ok := m.components[targetID]; ok && targetComp.IsFocusable() {
+		m.focusedComponentId = targetID
+	}
+}
+
 func calculateBoundingBoxes(
 	node *config.LayoutNode,
 	x, y, width, height int,
 	boxes map[string]*boundingBox,
 ) {
-	if node == nil {
+	if node == nil || width <= 0 || height <= 0 {
 		return
 	}
 
@@ -79,7 +78,7 @@ func calculateBoundingBoxes(
 	switch node.Type {
 	case "component":
 		if node.Component != nil {
-			id := componentId(node.Component)
+			id := components.ComponentId(node.Component)
 			boxes[id] = &boundingBox{
 				X: x, Y: y, W: w, H: h, ID: id,
 			}
@@ -198,7 +197,7 @@ func findFirstComponent(node *config.LayoutNode) string {
 		return ""
 	}
 	if node.Type == "component" && node.Component != nil {
-		return componentId(node.Component)
+		return components.ComponentId(node.Component)
 	}
 
 	for _, child := range node.Children {

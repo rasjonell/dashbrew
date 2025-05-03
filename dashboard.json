@@ -19,7 +19,7 @@
             "component": {
               "id": "disk",
               "type": "text",
-              "title": "💾 Disk Usage (/)",
+              "title": "💾 Long Cat output",
               "data": {
                 "source": "script",
                 "command": "cat ./dashboard.json"

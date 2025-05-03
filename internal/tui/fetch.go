@@ -1,7 +1,10 @@
 package tui
 
 import (
+	"fmt"
+
 	tea "github.com/charmbracelet/bubbletea"
+	"github.com/rasjonell/dashbrew/internal/components"
 	"github.com/rasjonell/dashbrew/internal/config"
 	"github.com/rasjonell/dashbrew/internal/data"
 )
@@ -11,24 +14,24 @@ type fetchResultMsg struct {
 	Result data.FetchOutput
 }
 
-type todoFetchOutput struct {
-	err   error
-	items []*data.TodoOutput
-}
-
-func (t *todoFetchOutput) Output() string            { return "" }
-func (t *todoFetchOutput) Error() error              { return t.err }
-func (t *todoFetchOutput) Items() []*data.TodoOutput { return t.items }
-
 func (m *model) fetchAllData() []tea.Cmd {
 	var cmds []tea.Cmd
-	for id, comp := range m.componentMap {
-		cmds = append(cmds, fetchComponentAsyncCmd(id, comp))
+	for id, comp := range m.components {
+		cmds = append(cmds, fetchComponentAsyncCmd(id, comp.Config()))
 	}
 	return cmds
 }
 
 func fetchComponentAsyncCmd(id string, comp *config.Component) tea.Cmd {
+	if comp.Data == nil {
+		return func() tea.Msg {
+			return fetchResultMsg{
+				ID:     id,
+				Result: data.NewFetchOutput("", fmt.Errorf("component data source is nil")),
+			}
+		}
+	}
+
 	return func() tea.Msg {
 		var result data.FetchOutput
 
@@ -36,9 +39,9 @@ func fetchComponentAsyncCmd(id string, comp *config.Component) tea.Cmd {
 			items, err := data.ReadTodoFile(comp.Data.Source)
 			return fetchResultMsg{
 				ID: id,
-				Result: &todoFetchOutput{
-					err:   err,
-					items: items,
+				Result: &components.TodoFetchOutput{
+					Err:       err,
+					TodoItems: items,
 				},
 			}
 		}
@@ -48,6 +51,8 @@ func fetchComponentAsyncCmd(id string, comp *config.Component) tea.Cmd {
 			result = data.RunScript(comp.Data.Command)
 		case "api":
 			result = data.RunAPI(comp.Data.URL)
+		default:
+			result = data.NewFetchOutput("", fmt.Errorf("unknown data source %s", comp.Data.Source))
 		}
 
 		return fetchResultMsg{

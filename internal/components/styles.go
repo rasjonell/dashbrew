@@ -1,20 +1,21 @@
-package tui
+package components
 
 import (
 	"github.com/charmbracelet/lipgloss"
+	"github.com/rasjonell/dashbrew/internal/config"
 )
 
-func (m *model) getBorderStyle() (normal lipgloss.Style, focused lipgloss.Style, border lipgloss.Border) {
+func GetBorderStyle(styles *config.StyleConfig) (normal lipgloss.Style, focused lipgloss.Style, border lipgloss.Border) {
 	border = lipgloss.RoundedBorder()
-	normalColor := getColor(m.cfg.Style.BorderColor, lipgloss.Color("#d9ebf9"))
-	focusedColor := getColor(m.cfg.Style.FocusedBorderColor, lipgloss.Color("#00ff00"))
+	normalColor := GetColor(styles.BorderColor, lipgloss.Color("#d9ebf9"))
+	focusedColor := GetColor(styles.FocusedBorderColor, lipgloss.Color("#00ff00"))
 
-	if m.cfg.Style == nil {
+	if styles == nil {
 		style := lipgloss.NewStyle().Border(border)
 		return style, style.BorderForeground(focusedColor), border
 	}
 
-	switch m.cfg.Style.BorderType {
+	switch styles.BorderType {
 	case "rounded":
 		border = lipgloss.RoundedBorder()
 	case "thicc":
@@ -33,7 +34,7 @@ func (m *model) getBorderStyle() (normal lipgloss.Style, focused lipgloss.Style,
 		border = lipgloss.BlockBorder()
 	}
 
-	configColor := m.cfg.Style.FocusedBorderColor
+	configColor := styles.FocusedBorderColor
 	if len(configColor) == 7 && configColor[0] == '#' {
 		focusedColor = lipgloss.Color(configColor)
 	}
@@ -42,14 +43,14 @@ func (m *model) getBorderStyle() (normal lipgloss.Style, focused lipgloss.Style,
 	return style, style.BorderForeground(focusedColor), border
 }
 
-func getColor(configColor string, defaultColor lipgloss.Color) lipgloss.Color {
+func GetColor(configColor string, defaultColor lipgloss.Color) lipgloss.Color {
 	if len(configColor) == 7 && configColor[0] == '#' {
 		return lipgloss.Color(configColor)
 	}
 	return defaultColor
 }
 
-func wrapContent(content string, width int) string {
+func WrapContent(content string, width int) string {
 	return lipgloss.
 		NewStyle().
 		Width(width).

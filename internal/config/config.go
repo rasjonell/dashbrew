@@ -6,8 +6,8 @@ import (
 )
 
 type DashboardConfig struct {
-	Style  *StyleConfig `json:"style,omitempty"`
 	Layout *LayoutNode  `json:"layout"`
+	Style  *StyleConfig `json:"style,omitempty"`
 }
 
 type StyleConfig struct {

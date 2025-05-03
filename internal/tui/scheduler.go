@@ -14,9 +14,9 @@ type refreshMsg struct {
 func (m *model) scheduleRefreshes() []tea.Cmd {
 	var cmds []tea.Cmd
 
-	for id, comp := range m.componentMap {
-		if comp.Data.RefreshInterval > 0 {
-			cmds = append(cmds, m.scheduleSingleRefresh(id, comp))
+	for id, comp := range m.components {
+		if comp.Config().Data.RefreshInterval > 0 {
+			cmds = append(cmds, m.scheduleSingleRefresh(id, comp.Config()))
 		}
 	}
 
