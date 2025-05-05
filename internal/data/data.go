@@ -39,12 +39,7 @@ func NewFetchOutput(output string, err error) *fetchOutput {
 }
 
 func RunScript(command string) FetchOutput {
-	parts := strings.Fields(command)
-	if len(parts) == 0 {
-		return NewFetchOutput("", fmt.Errorf("Empty command"))
-	}
-
-	cmd := exec.Command(parts[0], parts[1:]...)
+	cmd := exec.Command("sh", "-c", command)
 	out, err := cmd.CombinedOutput()
 	return NewFetchOutput(string(out), err)
 }

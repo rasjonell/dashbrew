@@ -39,7 +39,7 @@
               "title": "📜 Processes (Top 5 CPU)",
               "data": {
                 "source": "script",
-                "command": "./list.sh",
+                "command": "ps -eo pcpu,comm | head -n 6 | tail -n 5",
                 "refresh_interval": 2
               }
             }

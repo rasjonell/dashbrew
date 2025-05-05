@@ -107,15 +107,15 @@ func (c *ListComponent) parseDataToListItems(rawData string) []list.Item {
 		lines := strings.Split(strings.TrimSpace(rawData), "\n")
 		for _, line := range lines {
 			if line != "" {
-				items = append(items, ListItem{Val: line})
+				items = append(items, ListItem{Val: strings.TrimSpace(line)})
 			}
 		}
 	case "api":
-		var stringSlice []string
-		err := json.Unmarshal([]byte(rawData), &stringSlice)
+		var jsonArray []any
+		err := json.Unmarshal([]byte(rawData), &jsonArray)
 		if err == nil {
-			for _, s := range stringSlice {
-				items = append(items, ListItem{Val: s})
+			for _, s := range jsonArray {
+				items = append(items, ListItem{Val: fmt.Sprintf("%v", s)})
 			}
 		} else {
 			items = append(items, ListItem{Val: strings.TrimSpace(rawData)})

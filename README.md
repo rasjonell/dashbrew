@@ -157,7 +157,7 @@ Displays the output of a script or API as scrollable, wrapped text.
 Displays a list of items, with filtering and selection.
 
 - If `source` is `"script"`, each line of output is an item.
-- If `source` is `"api"`, the API must return a JSON array of strings.
+- If `source` is `"api"`, the API must return a JSON array of a primitive value (string, number, boolean).
 
 ```jsonc
 {
