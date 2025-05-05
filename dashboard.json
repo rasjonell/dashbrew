@@ -17,12 +17,16 @@
             "type": "component",
             "flex": 3,
             "component": {
-              "id": "disk",
-              "type": "text",
-              "title": "💾 Long Cat output",
+              "id": "chart-api",
+              "type": "chart",
+              "title": "📊 API Chart",
               "data": {
-                "source": "script",
-                "command": "cat ./dashboard.json"
+                "source": "api",
+                "url": "http://www.randomnumberapi.com/api/v1.0/random?min=100&max=1000&count=5",
+                "jsonPath": "$",
+                "refresh_interval": 1,
+                "refresh_mode": "append",
+                "caption": "Random API Values(append mode)"
               }
             }
           },
@@ -48,28 +52,52 @@
         "flex": 2,
         "children": [
           {
-            "type": "component",
+            "type": "container",
+            "direction": "row",
             "flex": 1,
-            "component": {
-              "id": "weather",
-              "type": "text",
-              "title": "🌦️ Weather",
-              "data": {
-                "source": "api",
-                "url": "https://wttr.in/Yerevan?format=3",
-                "refresh_interval": 900
+            "children": [
+              {
+                "type": "component",
+                "flex": 1,
+                "component": {
+                  "id": "weather",
+                  "type": "text",
+                  "title": "🌦️ Weather",
+                  "data": {
+                    "source": "api",
+                    "url": "https://wttr.in/Yerevan?format=4"
+                  }
+                }
+              },
+              {
+                "type": "component",
+                "flex": 1,
+                "component": {
+                  "id": "advice",
+                  "type": "text",
+                  "title": "💡 Advice",
+                  "data": {
+                    "source": "api",
+                    "jsonPath": "$.slip.advice",
+                    "url": "https://api.adviceslip.com/advice"
+                  }
+                }
               }
-            }
+            ]
           },
           {
             "type": "component",
             "flex": 3,
             "component": {
-              "id": "personal",
-              "type": "todo",
-              "title": "📙 Personal ToDo List",
+              "id": "chart",
+              "type": "chart",
+              "title": "📙 Script Chart",
               "data": {
-                "source": "./personal.txt"
+                "source": "script",
+                "command": "./random_numbers.sh 10",
+                "refresh_interval": 1,
+                "refresh_mode": "replace",
+                "caption": "Random Script Values(replace mode)"
               }
             }
           },

@@ -50,7 +50,7 @@ func fetchComponentAsyncCmd(id string, comp *config.Component) tea.Cmd {
 		case "script":
 			result = data.RunScript(comp.Data.Command)
 		case "api":
-			result = data.RunAPI(comp.Data.URL)
+			result = data.RunAPI(comp.Data.URL, comp.Data.JSONPath)
 		default:
 			result = data.NewFetchOutput("", fmt.Errorf("unknown data source %s", comp.Data.Source))
 		}

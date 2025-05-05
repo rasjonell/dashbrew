@@ -1,6 +1,7 @@
 package data
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
@@ -8,6 +9,8 @@ import (
 	"os/exec"
 	"strings"
 	"time"
+
+	"github.com/oliveagle/jsonpath"
 )
 
 type FetchOutput interface {
@@ -46,7 +49,7 @@ func RunScript(command string) FetchOutput {
 	return NewFetchOutput(string(out), err)
 }
 
-func RunAPI(url string) FetchOutput {
+func RunAPI(url, jsonPath string) FetchOutput {
 	if url == "" {
 		return NewFetchOutput("", fmt.Errorf("Empty URL"))
 	}
@@ -61,7 +64,7 @@ func RunAPI(url string) FetchOutput {
 	}
 	defer resp.Body.Close()
 
-	if resp.StatusCode != http.StatusOK {
+	if resp.StatusCode >= 300 {
 		bodyBytes, _ := io.ReadAll(resp.Body)
 		return NewFetchOutput("", fmt.Errorf("API Request Failed: status %d %s\n%s",
 			resp.StatusCode,
@@ -75,7 +78,35 @@ func RunAPI(url string) FetchOutput {
 		return NewFetchOutput("", fmt.Errorf("Failed to read response body: %w", err))
 	}
 
-	return NewFetchOutput(string(bodyBytes), nil)
+	if jsonPath == "" {
+		return NewFetchOutput(string(bodyBytes), nil)
+	}
+
+	var jsonData any
+	err = json.Unmarshal(bodyBytes, &jsonData)
+	if err != nil {
+		return NewFetchOutput("", fmt.Errorf("Failed to parse API response: %w", err))
+	}
+
+	res, err := jsonpath.JsonPathLookup(jsonData, jsonPath)
+	if err != nil {
+		return NewFetchOutput("", fmt.Errorf("Failed to lookup json path '%s': %w", jsonPath, err))
+	}
+
+	var resultBytes []byte
+	var marshallErr error
+
+	if res == nil {
+		resultBytes = []byte("null")
+	} else {
+		resultBytes, marshallErr = json.MarshalIndent(res, "", "  ")
+	}
+
+	if marshallErr != nil {
+		return NewFetchOutput("", fmt.Errorf("Failed to marshal jsonPath result: %w", marshallErr))
+	}
+
+	return NewFetchOutput(string(resultBytes), nil)
 }
 
 func ReadTodoFile(path string) ([]*TodoOutput, error) {

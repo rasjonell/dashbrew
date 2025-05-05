@@ -2,3 +2,4 @@
 + create generic list component
 - configurable list/todo styles
 + update documentation
++ add chart component
