@@ -11,7 +11,7 @@
 
 **Dashbrew** is a terminal dashboard builder that lets you visualize data from scripts and APIs right in your console, using a simple JSON configuration. Stay informed without leaving your terminal!
 
-![screenshot](./screen.png)
+![screenshot](./screen.gif)
 
 ---
 
@@ -26,17 +26,17 @@
     * _Text_: Scrollable, auto-wrapped text output.
     * _List_: Display a list of items from scripts or APIs.
     * _Todo_: Interactive todo list with add/remove and toggle done state support.
+    * _Chart_: Display simple ASCII line charts from numerical data.
 * **Terminal UI:** Built with the delightful [Bubble Tea](https://github.com/charmbracelet/bubbletea) framework.
 * **Navigation:** Easily move focus between components using arrow keys, `hjkl`, or your mouse.
-* **Scrolling:** Scroll through component content that doesn't fit using the mouse wheel or `h`/`j`.
-* **Text Wrapping:** Long lines within components are automatically wrapped to fit the component's width.
 * **Auto-Refresh:** Configure components to automatically refresh their data at specified intervals.
-* **Visual Focus Indicator:** Clearly see which component is currently selected.
 * **Mouse Support:** Click to focus, scroll with the wheel.
 
 ---
 
-## 🚀 Installation & Usage (will be changed)
+## 🚀 Installation & Usage
+
+_(Ensure you have Go installed)_
 
 1. Clone the repository:
 
@@ -51,7 +51,7 @@ cd dashbrew
 go build -o dashbrew ./cmd/dashbrew
 ```
 
-3. Create your `dashboard.json`
+3. Create your dashboard configuration file (e.g., `my_dashboard.json`). See the Configuration section below and the example [dashboard.json](./dashboard.json).
 
 4. Run:
 
@@ -103,26 +103,33 @@ Dashbrew uses a `json` file in to define the layout and components. Find an exam
 **Example Structure:**
 ```jsonc
 {
-  "id": "unique-component-id",
-  "type": "text",
-  "title": "My Component Title",
+  "id": "unique-component-id", // Optional: Explicit ID
+  "type": "text",              // "text", "list", "todo", or "chart"
+  "title": "My Component Title", // Optional: Title shown in header
   "data": {
-    "source": "script",
+    "source": "script", // "script", "api", "file", or path for "todo" type
     "command": "date +%Y-%m-%d", // Required if source is "script"
     "url": "https://api.example.com/status", // Required if source is "api"
-    "refresh_interval": 5 // Optional: Refresh data every 5 seconds. Omit or 0 for no auto-refresh.
+    "path": "./my_data.txt", // Required if source is "file"
+    "jsonPath": "$.data.value", // Optional: JSONPath expression for 'api' source
+    "caption": "Chart Caption", // Optional: Caption for 'chart' type
+    "refresh_interval": 5 // Optional: Refresh data every 5 seconds (0 = no auto-refresh)
   }
 }
 ```
 
 - `id`: (Optional) A unique ID. If omitted, an internal ID is generated.
-- `type`: The type of widget. Currently, `text`, `list`, and `todo` components are supported.
+- `type`: The type of widget. Currently, `text`, `list`, `todo`, and `chart` components are supported.
 - `title`: The title displayed in the component's header.
 - `data`: Defines where the component gets its content.
     - `source`: "script", "api", or todo list file path for components with type `todo` (example bellow).
-    - `command`: (For script source) The command to execute.
-    - `url`: (For api source) The URL to fetch via HTTP GET.
+    - `command`: (Required if `source` is `"script"`) The command to execute.
+    - `url`: (Required if `source` is `"api"`) The URL to fetch via HTTP GET.
+    - `jsonPath` (Optional, for `"api"` source) a [JSONPath](https://github.com/oliveagle/jsonpath#example-json-path-syntax) expression to filter or extract data from API's JSON response
+    - `caption`: (Optional, for `"chart"` type) A caption displayed bellow the chart
     - `refresh_interval`: (Optional) Time in seconds between data refreshes.
+    - `refresh_mode`: (Optional, for `"chart"` type) Either `"append"` or `"replace"` current ascii plot data
+
 
 ### Text Component
 
@@ -137,7 +144,8 @@ Displays the output of a script or API as scrollable, wrapped text.
     "data": {
       "source": "script", // "script" or "api"
       "command": "uname -a", // Required if source is "script"
-      "url": "https://api.example.com/status", // Required if source is "api"
+      "url": "https://api.adviceslip.com/advice" // Fetch a random advice
+      "jsonPath": "$.slip.advice", // Get only the advice string
       "refresh_interval": 10 // Optional: seconds between refreshes
     }
   }
@@ -198,6 +206,30 @@ Example:
  - profit
 ```
 
+
+### Chart Component
+
+
+Displays a simple ASCII line chart based on numerical data.
+
+```jsonc
+{
+  "type": "component",
+  "component": {
+    "id": "cpu-chart",
+    "type": "chart",
+    "title": "CPU Usage (%)",
+    "data": {
+      "source": "script",
+      "command": "./get_cpu_history.sh", // Script outputs numbers on newlines
+      "refresh_interval": 2,
+      "caption": "Last 15 CPU readings"
+    }
+  }
+}
+```
+
+
 ## ⌨️ Keybindings
 
 - Navigation:
@@ -223,7 +255,9 @@ Example:
 
 ### 💡 Future Ideas
 
-- More component types (charts, gauges).
+- More advanced chart types (bar, guage) and customizations
 - More data sources
-- Data parsing/transformation (e.g., extracting values from JSON).
-- Customizable themes/colors.
+- More sophisticated data parsing/transformation options beyond JSONPath.
+- Customizable themes/colors beyond border colors.
+- Component-specific styling options.
+- Table component.

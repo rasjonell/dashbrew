@@ -3,3 +3,4 @@
 - configurable list/todo styles
 + update documentation
 + add chart component
+- Add table component
