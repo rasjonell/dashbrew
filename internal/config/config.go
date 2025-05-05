@@ -34,7 +34,7 @@ type Component struct {
 
 type DataConfig struct {
 	Source          string `json:"source"`
-	JSONPath        string `json:"jsonPath"`
+	JSONPath        string `json:"json_path"`
 	X               string `json:"x,omitempty"`
 	Y               string `json:"y,omitempty"`
 	URL             string `json:"url,omitempty"`

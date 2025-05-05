@@ -111,7 +111,7 @@ Dashbrew uses a `json` file in to define the layout and components. Find an exam
     "command": "date +%Y-%m-%d", // Required if source is "script"
     "url": "https://api.example.com/status", // Required if source is "api"
     "path": "./my_data.txt", // Required if source is "file"
-    "jsonPath": "$.data.value", // Optional: JSONPath expression for 'api' source
+    "json_path": "$.data.value", // Optional: JSONPath expression for 'api' source
     "caption": "Chart Caption", // Optional: Caption for 'chart' type
     "refresh_interval": 5 // Optional: Refresh data every 5 seconds (0 = no auto-refresh)
   }
@@ -144,8 +144,8 @@ Displays the output of a script or API as scrollable, wrapped text.
     "data": {
       "source": "script", // "script" or "api"
       "command": "uname -a", // Required if source is "script"
-      "url": "https://api.adviceslip.com/advice" // Fetch a random advice
-      "jsonPath": "$.slip.advice", // Get only the advice string
+      "url": "https://api.adviceslip.com/advice", // Fetch a random advice
+      "json_path": "$.slip.advice", // Get only the advice string
       "refresh_interval": 10 // Optional: seconds between refreshes
     }
   }
@@ -222,8 +222,9 @@ Displays a simple ASCII line chart based on numerical data.
     "data": {
       "source": "script",
       "command": "./get_cpu_history.sh", // Script outputs numbers on newlines
-      "refresh_interval": 2,
-      "caption": "Last 15 CPU readings"
+      "caption": "Last 15 CPU readings",
+      "refresh_interval": 2, // Update every 2 seconds
+      "refresh_mode": "append" // Append new results to the chart(can be "replace")
     }
   }
 }

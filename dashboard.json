@@ -23,7 +23,7 @@
               "data": {
                 "source": "api",
                 "url": "http://www.randomnumberapi.com/api/v1.0/random?min=100&max=1000&count=5",
-                "jsonPath": "$",
+                "json_path": "$",
                 "refresh_interval": 1,
                 "refresh_mode": "append",
                 "caption": "Random API Values(append mode)"
@@ -78,7 +78,7 @@
                   "title": "💡 Advice",
                   "data": {
                     "source": "api",
-                    "jsonPath": "$.slip.advice",
+                    "json_path": "$.slip.advice",
                     "url": "https://api.adviceslip.com/advice"
                   }
                 }
