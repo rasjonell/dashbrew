@@ -38,25 +38,18 @@
 
 _(Ensure you have Go installed)_
 
-1. Clone the repository:
+1. Install:
 
 ```bash
-git clone https://github.com/rasjonell/dashbrew.git
-cd dashbrew
+go install github.com/rasjonell/dashbrew/cmd/dashbrew@latest
 ```
 
-2. Build the binary:
+2. Create your dashboard configuration file (e.g., `my_dashboard.json`). See the Configuration section below and the example [dashboard.json](./dashboard.json).
+
+3. Run:
 
 ```bash
-go build -o dashbrew ./cmd/dashbrew
-```
-
-3. Create your dashboard configuration file (e.g., `my_dashboard.json`). See the Configuration section below and the example [dashboard.json](./dashboard.json).
-
-4. Run:
-
-```bash
-./dashbrew -c your_dashboard.json
+dashbrew -c my_dashboard.json
 ```
 
 ## ⚙️ Configuration (`dashboard.json`)
