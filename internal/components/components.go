@@ -67,6 +67,8 @@ func NewComponent(cfg *config.Component, styles *config.StyleConfig) Component {
 		return newListComponent(base)
 	case "todo":
 		return newTodoComponent(base)
+	case "chart":
+		return newChartComponent(base)
 	default:
 		return newErrorComponent(base, "unknown component type: "+cfg.Type)
 	}
