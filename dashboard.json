@@ -17,16 +17,11 @@
             "type": "component",
             "flex": 3,
             "component": {
-              "id": "chart-api",
-              "type": "chart",
-              "title": "📊 API Chart",
+              "id": "dash-todo",
+              "type": "todo",
+              "title": "📙 Dashbrew ToDo",
               "data": {
-                "source": "api",
-                "url": "http://www.randomnumberapi.com/api/v1.0/random?min=100&max=1000&count=5",
-                "json_path": "$",
-                "refresh_interval": 1,
-                "refresh_mode": "append",
-                "caption": "Random API Values(append mode)"
+                "source": "./todo.txt"
               }
             }
           },
@@ -34,13 +29,29 @@
             "type": "component",
             "flex": 2,
             "component": {
-              "id": "processes",
-              "type": "list",
-              "title": "📜 Processes (Top 5 CPU)",
+              "id": "table",
+              "type": "table",
+              "title": "📈 Posts Table",
               "data": {
-                "source": "script",
-                "command": "ps -eo pcpu,comm | head -n 6 | tail -n 5",
-                "refresh_interval": 2
+                "source": "api",
+                "url": "https://jsonplaceholder.typicode.com/todos",
+                "columns": [
+                  {
+                    "flex": 1,
+                    "label": "ID",
+                    "field": "userId"
+                  },
+                  {
+                    "flex": 4,
+                    "label": "Title",
+                    "field": "title"
+                  },
+                  {
+                    "flex": 2,
+                    "label": "Is Done?",
+                    "field": "completed"
+                  }
+                ]
               }
             }
           }
@@ -79,7 +90,8 @@
                   "data": {
                     "source": "api",
                     "json_path": "$.slip.advice",
-                    "url": "https://api.adviceslip.com/advice"
+                    "url": "https://api.adviceslip.com/advice",
+                    "refresh_interval": 10
                   }
                 }
               }
@@ -96,20 +108,22 @@
                 "source": "script",
                 "command": "./random_numbers.sh 10",
                 "refresh_interval": 1,
-                "refresh_mode": "replace",
-                "caption": "Random Script Values(replace mode)"
+                "refresh_mode": "append",
+                "caption": "Random Script Values(append mode)"
               }
             }
           },
           {
             "type": "component",
-            "flex": 3,
+            "flex": 2,
             "component": {
-              "id": "todo",
-              "type": "todo",
-              "title": "📕 Dashbrew ToDo List",
+              "id": "api-list",
+              "type": "list",
+              "title": "📜 API List",
               "data": {
-                "source": "./todo.txt"
+                "source": "api",
+                "url": "https://jsonplaceholder.typicode.com/todos",
+                "json_path": "$.title"
               }
             }
           }

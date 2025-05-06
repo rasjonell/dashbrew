@@ -31,3 +31,11 @@ func CalcWidthHeight(w, h int) (int, int) {
 
 	return innerWidth, innerHeight
 }
+
+func GetFlex(flex int) int {
+	if flex <= 0 {
+		return 1
+	}
+
+	return flex
+}

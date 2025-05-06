@@ -74,7 +74,7 @@ func (m *model) renderNode(
 
 		totalFlex := 0
 		for _, child := range node.Children {
-			totalFlex += getFlex(child)
+			totalFlex += components.GetFlex(child.Flex)
 		}
 
 		offset := 0
@@ -83,7 +83,7 @@ func (m *model) renderNode(
 		var rendered []string
 
 		for i, child := range node.Children {
-			flex := getFlex(child)
+			flex := components.GetFlex(child.Flex)
 			isLast := i == numChildren-1
 
 			var childWidth, childHeight int

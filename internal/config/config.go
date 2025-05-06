@@ -33,15 +33,22 @@ type Component struct {
 }
 
 type DataConfig struct {
-	Source          string `json:"source"`
-	JSONPath        string `json:"json_path"`
-	X               string `json:"x,omitempty"`
-	Y               string `json:"y,omitempty"`
-	URL             string `json:"url,omitempty"`
-	Command         string `json:"command,omitempty"`
-	Caption         string `json:"caption,omitempty"`
-	RefreshMode     string `json:"refresh_mode,omitempty"`
-	RefreshInterval int    `json:"refresh_interval,omitempty"`
+	Source          string          `json:"source"`
+	JSONPath        string          `json:"json_path"`
+	X               string          `json:"x,omitempty"`
+	Y               string          `json:"y,omitempty"`
+	URL             string          `json:"url,omitempty"`
+	Command         string          `json:"command,omitempty"`
+	Caption         string          `json:"caption,omitempty"`
+	Columns         []*ColumnConfig `json:"columns,omitempty"`
+	RefreshMode     string          `json:"refresh_mode,omitempty"`
+	RefreshInterval int             `json:"refresh_interval,omitempty"`
+}
+
+type ColumnConfig struct {
+	Label string `json:"label"`
+	Field string `json:"field,omitempty"`
+	Flex  int    `json:"flex,omitempty"`
 }
 
 func LoadConfig(path string) (*DashboardConfig, error) {

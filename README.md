@@ -27,6 +27,7 @@
     * _List_: Display a list of items from scripts or APIs.
     * _Todo_: Interactive todo list with add/remove and toggle done state support.
     * _Chart_: Display simple ASCII line charts from numerical data.
+    * _Table_: Display data in a structured table with columns defined in the configuration.
 * **Terminal UI:** Built with the delightful [Bubble Tea](https://github.com/charmbracelet/bubbletea) framework.
 * **Navigation:** Easily move focus between components using arrow keys, `hjkl`, or your mouse.
 * **Auto-Refresh:** Configure components to automatically refresh their data at specified intervals.
@@ -97,7 +98,7 @@ Dashbrew uses a `json` file in to define the layout and components. Find an exam
 ```jsonc
 {
   "id": "unique-component-id", // Optional: Explicit ID
-  "type": "text",              // "text", "list", "todo", or "chart"
+  "type": "text",              // "text", "list", "todo", "chart", or "table"
   "title": "My Component Title", // Optional: Title shown in header
   "data": {
     "source": "script", // "script", "api", "file", or path for "todo" type
@@ -122,6 +123,7 @@ Dashbrew uses a `json` file in to define the layout and components. Find an exam
     - `caption`: (Optional, for `"chart"` type) A caption displayed bellow the chart
     - `refresh_interval`: (Optional) Time in seconds between data refreshes.
     - `refresh_mode`: (Optional, for `"chart"` type) Either `"append"` or `"replace"` current ascii plot data
+    - `columns`: (Optional, for `"table"` type) Array of `{"label": "string", "field": "string", "flex": 1}`
 
 
 ### Text Component
@@ -202,7 +204,6 @@ Example:
 
 ### Chart Component
 
-
 Displays a simple ASCII line chart based on numerical data.
 
 ```jsonc
@@ -223,6 +224,55 @@ Displays a simple ASCII line chart based on numerical data.
 }
 ```
 
+### Table Component
+
+Displays data in a structured table with columns defined in the configuration.
+
+It accepts JSON Arrays:
+
+Either an array of objects with the given fields:
+```jsonc
+{
+  "type": "component",
+  "component": {
+    "id": "data-table",
+    "type": "table",
+    "title": "My Data Table",
+    "data": {
+      "source": "api",
+      "url": "https://api.example.com/structured_data", // API returns [{"id":.., "title":.., "status_code":..}, ...]
+      "refresh_interval": 30,
+      "columns": [
+        { "label": "Identifier", "field": "id", "flex": 1 },
+        { "label": "Row Title", "field": "title", "flex": 4 },
+        { "label": "Status Code", "field": "status_code" } // Uses default flex: 1
+      ],
+    }
+  }
+}
+```
+
+Or an array of primitive value arrays(e.g. `[["string", 1], [true, 2.3]]`)
+
+```jsonc
+{
+  "type": "component",
+  "component": {
+    "id": "array-data-table",
+    "type": "table",
+    "title": "Array Data Table",
+    "columns": [
+      { "label": "Rank" }, // Uses default flex: 1
+      { "label": "Name", "flex": 3 }
+    ],
+    "data": {
+      "source": "script",
+      "command": "./get_array_data.sh" // Script returns [[1, "First"], [2, "Second"]]
+    }
+  }
+}
+
+```
 
 ## ⌨️ Keybindings
 
@@ -235,10 +285,12 @@ Displays a simple ASCII line chart based on numerical data.
 - Focused Componet Actions:
   - Every Component:
     - `r` - Refresh Data Source
-  - Text Component:
+  - Scrolalble Components (Text, List, Table):
     - Mouse Wheel - Scroll
-    - `PgUp` / `b` / `u` - Scroll up.
-    - `PgDown` / `Space` / `d` - Scroll down. 
+    - `h` / `↑` / `PgUp` / `b` / `u` - Scroll up.
+    - `j` / `↓` / `PgDown` / `Space` / `d` - Scroll down. 
+    - `g` - Go to the top
+    - `G` - Go to the end
   - Lists (Todo and regular)
     - `/` - Filter the list (type, then `Enter` to apply, `Esc` to cancel)
   - Todo List:

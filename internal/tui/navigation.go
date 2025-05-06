@@ -90,13 +90,13 @@ func calculateBoundingBoxes(
 
 		totalFlex := 0
 		for _, child := range node.Children {
-			totalFlex += getFlex(child)
+			totalFlex += components.GetFlex(child.Flex)
 		}
 
 		offset := 0
 		numChildren := len(node.Children)
 		for i, child := range node.Children {
-			flex := getFlex(child)
+			flex := components.GetFlex(child.Flex)
 
 			isLast := i == numChildren-1
 
