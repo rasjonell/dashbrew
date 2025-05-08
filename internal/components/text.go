@@ -2,7 +2,6 @@ package components
 
 import (
 	"fmt"
-	"strings"
 
 	"github.com/charmbracelet/bubbles/viewport"
 	tea "github.com/charmbracelet/bubbletea"
@@ -29,7 +28,7 @@ func newTextComponent(base baseComponent) *TextComponent {
 }
 
 func (c *TextComponent) View(w, h int, focused bool) string {
-	style, focusedStyle, border := GetBorderStyle(c.styles)
+	style, focusedStyle, border := GetBorderStyle(c.styles.Border)
 	borderStyle := style
 	if focused {
 		borderStyle = focusedStyle
@@ -50,7 +49,7 @@ func (c *TextComponent) View(w, h int, focused bool) string {
 
 	var footer string
 	if footerHeight > 0 {
-		footer = c.renderFooter()
+		footer = c.renderFooter(c.viewport.Width, c.viewport.ScrollPercent(), c.config.Data.Caption)
 	}
 
 	fullContent := lipgloss.JoinVertical(lipgloss.Left,
@@ -94,13 +93,4 @@ func (c *TextComponent) Update(msg tea.Msg) (Component, tea.Cmd) {
 
 func (c *TextComponent) HandleAddMode(msg tea.KeyMsg) (Component, bool, tea.Cmd) {
 	return c, true, nil
-}
-
-func (c *TextComponent) renderFooter() string {
-	percentStr := fmt.Sprintf("%3.f%% ⥮ ", c.viewport.ScrollPercent()*100)
-	paddingWidth := max(0, c.viewport.Width-lipgloss.Width(percentStr))
-
-	padding := strings.Repeat(" ", paddingWidth)
-
-	return padding + percentStr
 }

@@ -10,12 +10,6 @@ type DashboardConfig struct {
 	Style  *StyleConfig `json:"style,omitempty"`
 }
 
-type StyleConfig struct {
-	BorderType         string `json:"borderType,omitempty"`
-	BorderColor        string `json:"BorderColor,omitempty"`
-	FocusedBorderColor string `json:"focusedBorderColor,omitempty"`
-}
-
 type LayoutNode struct {
 	Type      string `json:"type"`
 	Flex      int    `json:"flex,omitempty"`
@@ -49,6 +43,22 @@ type ColumnConfig struct {
 	Label string `json:"label"`
 	Field string `json:"field,omitempty"`
 	Flex  int    `json:"flex,omitempty"`
+}
+
+type StyleConfig struct {
+	Global *GlobalStyleConfig `json:"global,omitempty"`
+	Border *BorderStyleConfig `json:"border,omitempty"`
+}
+
+type GlobalStyleConfig struct {
+	TextColor        string `json:"textColor,omitempty"`
+	HighlightedColor string `json:"highlightedColor,omitempty"`
+}
+
+type BorderStyleConfig struct {
+	Type         string `json:"type,omitempty"`
+	Color        string `json:"color,omitempty"`
+	FocusedColor string `json:"focusedColor,omitempty"`
 }
 
 func LoadConfig(path string) (*DashboardConfig, error) {

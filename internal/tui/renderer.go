@@ -49,7 +49,7 @@ func (m *model) renderNode(
 		isFocused := id == focusedComponentId
 
 		if isFocused && m.isAdding && comp.SupportsAdd() {
-			_, focusedStyle, _ := components.GetBorderStyle(m.cfg.Style)
+			_, focusedStyle, _ := components.GetBorderStyle(m.cfg.Style.Border)
 			borderStyle := focusedStyle
 
 			addInput := comp.GetAddInput()

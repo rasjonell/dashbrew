@@ -65,7 +65,7 @@ func (c *TodoComponent) SupportsAdd() bool   { return true }
 func (c *TodoComponent) GetAddInput() string { return c.addInput }
 
 func (c *TodoComponent) View(w, h int, focused bool) string {
-	style, focusedStyle, border := GetBorderStyle(c.styles)
+	style, focusedStyle, border := GetBorderStyle(c.styles.Border)
 	borderStyle := style
 	if focused {
 		borderStyle = focusedStyle

@@ -42,7 +42,7 @@ func newListComponent(base baseComponent) *ListComponent {
 }
 
 func (c *ListComponent) View(w, h int, focused bool) string {
-	style, focusedStyle, border := GetBorderStyle(c.styles)
+	style, focusedStyle, border := GetBorderStyle(c.styles.Border)
 	borderStyle := style
 	if focused {
 		borderStyle = focusedStyle

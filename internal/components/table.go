@@ -34,7 +34,7 @@ func newTableComponent(base baseComponent) *TableComponent {
 }
 
 func (c *TableComponent) View(w, h int, focused bool) string {
-	style, focusedStyle, border := GetBorderStyle(c.styles)
+	style, focusedStyle, border := GetBorderStyle(c.styles.Border)
 	borderStyle := style
 	if focused {
 		borderStyle = focusedStyle
@@ -188,7 +188,7 @@ func (c *TableComponent) parseDataToTableRows(rawData string, columns []*config.
 
 func getTableStyles(styleCfg *config.StyleConfig) table.Styles {
 	s := table.DefaultStyles()
-	normalFg, _, border := GetBorderStyle(styleCfg)
+	normalFg, _, border := GetBorderStyle(styleCfg.Border)
 
 	s.Header = s.Header.
 		BorderStyle(border).

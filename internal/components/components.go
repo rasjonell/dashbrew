@@ -2,7 +2,6 @@ package components
 
 import (
 	"fmt"
-
 	"github.com/charmbracelet/bubbles/key"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
@@ -71,6 +70,8 @@ func NewComponent(cfg *config.Component, styles *config.StyleConfig) Component {
 		return newChartComponent(base)
 	case "table":
 		return newTableComponent(base)
+	case "histogram":
+		return newHistogramComponent(base)
 	default:
 		return newErrorComponent(base, "unknown component type: "+cfg.Type)
 	}
@@ -104,6 +105,22 @@ func (b baseComponent) renderHeader(border lipgloss.Border) string {
 	return style.Render(title)
 }
 
+func (b baseComponent) renderFooter(w int, percent float64, caption string) string {
+	percentStr := fmt.Sprintf("%3.f%% ⥮ ", percent*100)
+	percentWidth := lipgloss.Width(percentStr)
+	captionStyle := lipgloss.NewStyle().Width(w - percentWidth).AlignHorizontal(lipgloss.Center).Bold(true)
+	percentStyle := lipgloss.NewStyle().Width(w - captionStyle.GetWidth()).AlignHorizontal(lipgloss.Right)
+
+	if caption != "" {
+		return lipgloss.JoinHorizontal(lipgloss.Left,
+			captionStyle.Render(caption),
+			percentStyle.Render(percentStr),
+		)
+	}
+
+	return percentStyle.Width(w).Render(percentStr)
+}
+
 type errorComponent struct {
 	baseComponent
 	errorMessage string
@@ -123,7 +140,7 @@ func (c *errorComponent) HandleAddMode(msg tea.KeyMsg) (Component, bool, tea.Cmd
 }
 
 func (c *errorComponent) View(width, height int, focused bool) string {
-	style, _, border := GetBorderStyle(c.styles)
+	style, _, border := GetBorderStyle(c.styles.Border)
 
 	innerWidth, innerHeight := CalcWidthHeight(width, height)
 

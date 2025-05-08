@@ -1,8 +1,11 @@
 {
   "style": {
-    "borderType": "rounded",
-    "borderColor": "#ffffff",
-    "focusedBorderColor": "#00ff00"
+    "border": {
+      "type": "thicc",
+      "color": "#888888",
+      "focusedColor": "#444444"
+    },
+    "borderType": "thicc"
   },
   "layout": {
     "type": "container",
@@ -117,13 +120,14 @@
             "type": "component",
             "flex": 2,
             "component": {
-              "id": "api-list",
-              "type": "list",
-              "title": "📜 API List",
+              "id": "histogram",
+              "type": "histogram",
+              "title": "📊 Data Distribution",
               "data": {
-                "source": "api",
-                "url": "https://jsonplaceholder.typicode.com/todos",
-                "json_path": "$.title"
+                "source": "script",
+                "command": "./histogram_data.sh",
+                "refresh_interval": 5,
+                "caption": "Distribution of fruites"
               }
             }
           }
