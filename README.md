@@ -73,7 +73,7 @@ dashbrew -c dashboard.json
 
 ## Complete Documentation
 
-For comprehensive documentation on all features, please refer to our [GitHub Wiki](https://githuv.com/rasjonell/dashbrew/wiki):
+For comprehensive documentation on all features, please refer to our [GitHub Wiki](https://github.com/rasjonell/dashbrew/wiki):
 
 - [Layout System](https://github.com/rasjonell/dashbrew/wiki/1)
 - [Data Sources](https://github.com/rasjonell/dashbrew/wiki/1)
