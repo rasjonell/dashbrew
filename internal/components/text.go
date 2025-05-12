@@ -42,9 +42,9 @@ func (c *TextComponent) View(w, h int, focused bool) string {
 	c.viewport.Width = innerWidth
 	footerHeight := 0
 	if !(c.viewport.AtTop() && c.viewport.AtBottom()) {
-		footerHeight = 1
+		footerHeight = 2
 	}
-	c.viewport.Height = max(0, innerHeight-headerHeight-footerHeight)
+	c.viewport.Height = max(0, innerHeight-headerHeight)
 	c.viewport.SetContent(WrapContent(c.content, c.viewport.Width))
 
 	var footer string

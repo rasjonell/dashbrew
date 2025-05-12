@@ -13,297 +13,168 @@
 
 ![screenshot](./screen.gif)
 
----
+## 🚀 Installation
 
-## ✨ Features
-
-* **Configurable Layout:** Define complex dashboard layouts (rows, columns, flexible sizing)
-* **Multiple Data Sources:**
-    * `script`: Execute local shell commands/scripts and display their output.
-    * `api`: Fetch data from HTTP APIs and display the response body.
-    * `todo`: For ToDo lists, read and write a custom todo list text file.
-* **Component Types**
-    * _Text_: Scrollable, auto-wrapped text output.
-    * _List_: Display a list of items from scripts or APIs.
-    * _Todo_: Interactive todo list with add/remove and toggle done state support.
-    * _Chart_: Display simple ASCII line charts from numerical data.
-    * _Table_: Display data in a structured table with columns defined in the configuration.
-* **Terminal UI:** Built with the delightful [Bubble Tea](https://github.com/charmbracelet/bubbletea) framework.
-* **Navigation:** Easily move focus between components using arrow keys, `hjkl`, or your mouse.
-* **Auto-Refresh:** Configure components to automatically refresh their data at specified intervals.
-* **Mouse Support:** Click to focus, scroll with the wheel.
-
----
-
-## 🚀 Installation & Usage
-
-_(Ensure you have Go installed)_
-
-1. Install:
+### Using Go Install
 
 ```bash
 go install github.com/rasjonell/dashbrew/cmd/dashbrew@latest
 ```
 
-2. Create your dashboard configuration file (e.g., `my_dashboard.json`). See the Configuration section below and the example [dashboard.json](./dashboard.json).
-
-3. Run:
+### From Source
 
 ```bash
-dashbrew -c my_dashboard.json
+# Clone the repository
+git clone https://github.com/rasjonell/dashbrew.git
+cd dashbrew
+
+# Build and install
+go install ./cmd/dashbrew
 ```
 
-## ⚙️ Configuration (`dashboard.json`)
+## Quick Start
 
-Dashbrew uses a `json` file in to define the layout and components. Find an example [here](./dashboard.json)
-
-**Structure:**
-
+1. Create a simple dashboard configuration file(`dashboard.json`):
 ```jsonc
 {
   "style": {
-    "borderType": "rounded",
-    "borderColor": "#ffffff",
-    "focusedBorderColor": "#00ff00"
+    "border": {
+      "type": "thicc",
+      "color": "#cccccc",
+      "focusedColor": "#474747"
+    }
   },
   "layout": {
-    "type": "container", // "container" or "component"
-    "direction": "row",  // "row" or "column" (for containers)
-    "flex": 1,           // Optional: Relative size factor (default: 1)
-    "children": [ ], // Array of child layout nodes (for containers)
-    "component": { } // Component definition (for components)
+    "type": "container",
+    "direction": "row",
+    "children": [
+      {
+        "type": "component",
+        "flex": 1,
+        "component": {
+          "type": "text",
+          "title": "Hello Dashbrew",
+          "data": {
+            "source": "script",
+            "command": "echo 'Welcome to Dashbrew!'"
+          }
+        }
+      }
+    ]
   }
 }
 ```
 
-### Style Configuration:
+2. run:
 
-*All of the style configuration is optional, defaults will be used when not provided.*
-
-- `borderType`: `"rounded"` | `"thicc"` | `"double"` | `"hidden"` | `"normal"` | `"md"` | `"ascii"` | `"block"`
-- `borderColor`: any valid hex color (`#ffffff`, `#696969`)
-- `focusedBorderColor`: any valid hex color (`#00ff00`, `#694200`)
-
-### Layout Nodes:
-
-- `type`: Can be "container" or "component".
-- `direction`: (Only for container) How children are arranged ("row" or "column").
-- `flex`: (Optional) An integer determining how space is distributed among siblings. A component with flex: 2 will try to be twice as large (in the container's direction) as a sibling with flex: 1. Defaults to 1.
-- `children`: (Only for container) An array of nested layout nodes.
-- `component`: (Only for component) Defines the actual widget to display.
-
-### Component Definition:
-
-**Example Structure:**
-```jsonc
-{
-  "id": "unique-component-id", // Optional: Explicit ID
-  "type": "text",              // "text", "list", "todo", "chart", or "table"
-  "title": "My Component Title", // Optional: Title shown in header
-  "data": {
-    "source": "script", // "script", "api", "file", or path for "todo" type
-    "command": "date +%Y-%m-%d", // Required if source is "script"
-    "url": "https://api.example.com/status", // Required if source is "api"
-    "path": "./my_data.txt", // Required if source is "file"
-    "json_path": "$.data.value", // Optional: JSONPath expression for 'api' source
-    "caption": "Chart Caption", // Optional: Caption for 'chart' type
-    "refresh_interval": 5 // Optional: Refresh data every 5 seconds (0 = no auto-refresh)
-  }
-}
+```bash
+dashbrew -c dashboard.json
 ```
 
-- `id`: (Optional) A unique ID. If omitted, an internal ID is generated.
-- `type`: The type of widget. Currently, `text`, `list`, `todo`, and `chart` components are supported.
-- `title`: The title displayed in the component's header.
-- `data`: Defines where the component gets its content.
-    - `source`: "script", "api", or todo list file path for components with type `todo` (example bellow).
-    - `command`: (Required if `source` is `"script"`) The command to execute.
-    - `url`: (Required if `source` is `"api"`) The URL to fetch via HTTP GET.
-    - `jsonPath` (Optional, for `"api"` source) a [JSONPath](https://github.com/oliveagle/jsonpath#example-json-path-syntax) expression to filter or extract data from API's JSON response
-    - `caption`: (Optional, for `"chart"` type) A caption displayed bellow the chart
-    - `refresh_interval`: (Optional) Time in seconds between data refreshes.
-    - `refresh_mode`: (Optional, for `"chart"` type) Either `"append"` or `"replace"` current ascii plot data
-    - `columns`: (Optional, for `"table"` type) Array of `{"label": "string", "field": "string", "flex": 1}`
+## Complete Documentation
 
+For comprehensive documentation on all features, please refer to our [GitHub Wiki](https://githuv.com/rasjonell/dashbrew/wiki):
 
-### Text Component
+- [Layout System](https://github.com/rasjonell/dashbrew/wiki/1)
+- [Data Sources](https://github.com/rasjonell/dashbrew/wiki/1)
+- [Component Types](https://github.com/rasjonell/dashbrew/wiki/1)
+- [Styling Options](https://github.com/rasjonell/dashbrew/wiki/1)
+- [Advanced Configuration](https://github.com/rasjonell/dashbrew/wiki/1)
+- [Keyboard Shortcuts](https://github.com/rasjonell/dashbrew/wiki/1)
 
-Displays the output of a script or API as scrollable, wrapped text.
+## Basic Examples
+
+### Display API Data
+
+Show real-time data from an API:
 
 ```jsonc
 {
   "type": "component",
   "component": {
     "type": "text",
-    "title": "System Info",
+    "title": "🌦️ Weather",
     "data": {
-      "source": "script", // "script" or "api"
-      "command": "uname -a", // Required if source is "script"
-      "url": "https://api.adviceslip.com/advice", // Fetch a random advice
-      "json_path": "$.slip.advice", // Get only the advice string
-      "refresh_interval": 10 // Optional: seconds between refreshes
+      "source": "api",
+      "url": "https://wttr.in/<YOUR_CITY>?format=4",
+      "refresh_interval": 60
     }
   }
 }
 ```
 
-### List Component
+### Creating a ToDo List
 
-Displays a list of items, with filtering and selection.
+Create a `todo.txt` file:
 
-- If `source` is `"script"`, each line of output is an item.
-- If `source` is `"api"`, the API must return a JSON array of a primitive value (string, number, boolean).
-
-```jsonc
-{
-  "type": "component",
-  "component": {
-    "type": "list",
-    "title": "Recent Logs",
-    "data": {
-      "source": "script", // "script" or "api"
-      "command": "cat /var/log/syslog | tail -n 10", // For script
-      "url": "https://api.example.com/items", // For api, must return ["item1", "item2", ...]
-      "refresh_interval": 5 // Optional
-    }
-  }
-}
+```
+- finish work
++ laundry
++ dishes
 ```
 
-### Todo Component
-
-Displays and manages a todo list stored in a local file.
-You can add, toggle, and delete items interactively.
+Add it to your dashboard:
 
 ```jsonc
 {
   "type": "component",
   "component": {
     "type": "todo",
-    "title": "My Todos",
+    "title": "📋 My Todo List",
     "data": {
-      "source": "./todos.txt"
+      "source": "./todo.txt"
     }
   }
 }
 ```
 
-#### Todo File Format
+### Creating a Chart
 
-Each line represents a todo item:
-  - `-` means to do
-  - `+` means done
-
-Example:
-```
- + learn HTMX
- + rise & grind
- - profit
-```
-
-
-### Chart Component
-
-Displays a simple ASCII line chart based on numerical data.
+Visualize Data with charts:
 
 ```jsonc
 {
   "type": "component",
   "component": {
-    "id": "cpu-chart",
     "type": "chart",
-    "title": "CPU Usage (%)",
+    "title": "📊 System Metrics",
     "data": {
       "source": "script",
-      "command": "./get_cpu_history.sh", // Script outputs numbers on newlines
-      "caption": "Last 15 CPU readings",
-      "refresh_interval": 2, // Update every 2 seconds
-      "refresh_mode": "append" // Append new results to the chart(can be "replace")
+      "command": "echo '10\n25\n15\n30\n45'",
+      "refresh_interval": 5,
+      "caption": "CPU Usage (%)"
     }
   }
 }
 ```
 
-### Table Component
+### Create a Histogram
 
-Displays data in a structured table with columns defined in the configuration.
-
-It accepts JSON Arrays:
-
-Either an array of objects with the given fields:
-```jsonc
-{
-  "type": "component",
-  "component": {
-    "id": "data-table",
-    "type": "table",
-    "title": "My Data Table",
-    "data": {
-      "source": "api",
-      "url": "https://api.example.com/structured_data", // API returns [{"id":.., "title":.., "status_code":..}, ...]
-      "refresh_interval": 30,
-      "columns": [
-        { "label": "Identifier", "field": "id", "flex": 1 },
-        { "label": "Row Title", "field": "title", "flex": 4 },
-        { "label": "Status Code", "field": "status_code" } // Uses default flex: 1
-      ],
-    }
-  }
-}
-```
-
-Or an array of primitive value arrays(e.g. `[["string", 1], [true, 2.3]]`)
+Show distributions with histograms:
 
 ```jsonc
 {
   "type": "component",
   "component": {
-    "id": "array-data-table",
-    "type": "table",
-    "title": "Array Data Table",
-    "columns": [
-      { "label": "Rank" }, // Uses default flex: 1
-      { "label": "Name", "flex": 3 }
-    ],
+    "type": "histogram",
+    "title": "📊 Age Distribution",
     "data": {
       "source": "script",
-      "command": "./get_array_data.sh" // Script returns [[1, "First"], [2, "Second"]]
+      "command": "echo '\"18-24\": 45\n\"25-34\": 78\n\"35-44\": 52\n\"45-54\": 34\n\"55+\": 21'",
+      "caption": "Users by Age Group"
     }
   }
 }
-
 ```
 
-## ⌨️ Keybindings
+## Basic Navigation
 
-- Navigation:
-    - `shift + ↑` / `shifht + K` - Move Up
-    - `shift + ↓` / `shift + J` - Move Down
-    - `shift + ←` / `shift + H` - Move Left
-    - `shift + →` / `shift + L` - Move Right
-    - `Left Click` - Focus Component Under Cursor
-- Focused Componet Actions:
-  - Every Component:
-    - `r` - Refresh Data Source
-  - Scrolalble Components (Text, List, Table):
-    - Mouse Wheel - Scroll
-    - `h` / `↑` / `PgUp` / `b` / `u` - Scroll up.
-    - `j` / `↓` / `PgDown` / `Space` / `d` - Scroll down. 
-    - `g` - Go to the top
-    - `G` - Go to the end
-  - Lists (Todo and regular)
-    - `/` - Filter the list (type, then `Enter` to apply, `Esc` to cancel)
-  - Todo List:
-    - `a` - Add a new todo item (type, then `Enter` to save, `Esc` to cancel)
-    - `Space` - Toggle done/undone for selected item
-    - `d` / `Delete` / `Backspace` - Delete selected item
-- Quit: `Ctrl+C`
+- `Shift+Arrow` or `Shift` + `H/J/K/L`: Move between components
+- `A`: Add item (in todo lists)
+- `Space`: Toggle item state (in todo lists)
+- `R`: Refresh data for the focused component
+- `Ctrl+C`: Quit
 
-### 💡 Future Ideas
+## License
 
-- More advanced chart types (bar, guage) and customizations
-- More data sources
-- More sophisticated data parsing/transformation options beyond JSONPath.
-- Customizable themes/colors beyond border colors.
-- Component-specific styling options.
-- Table component.
+[MIT License](./LICENSE)

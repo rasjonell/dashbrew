@@ -52,7 +52,7 @@ func (c *HistogramComponent) View(w, h int, focused bool) string {
 
 	footerHeight := 0
 	if !(c.viewport.AtTop() && c.viewport.AtBottom()) {
-		footerHeight = 2
+		footerHeight = 1
 	}
 	var footer string
 	if footerHeight > 0 {
