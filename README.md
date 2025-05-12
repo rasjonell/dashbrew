@@ -76,7 +76,7 @@ dashbrew -c dashboard.json
 For comprehensive documentation on all features, please refer to our [GitHub Wiki](https://github.com/rasjonell/dashbrew/wiki):
 
 - [Layout System](https://github.com/rasjonell/dashbrew/wiki/https://github.com/rasjonell/dashbrew/wiki/Layout-System)
-- [Components]([https://github.com/rasjonell/dashbrew/wiki/1](https://github.com/rasjonell/dashbrew/wiki/Components))
+- [Components](https://github.com/rasjonell/dashbrew/wiki/Components)
 
 ## Basic Examples
 
