@@ -20,11 +20,12 @@
             "type": "component",
             "flex": 3,
             "component": {
-              "id": "dash-todo",
-              "type": "todo",
-              "title": "📙 Dashbrew ToDo",
+              "id": "long-text",
+              "type": "text",
+              "title": "📙 Scrollable Text",
               "data": {
-                "source": "./todo.txt"
+                "source": "script",
+                "command": "cat ./dashboard.json"
               }
             }
           },

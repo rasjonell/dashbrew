@@ -72,5 +72,17 @@ func LoadConfig(path string) (*DashboardConfig, error) {
 		return nil, err
 	}
 
+	if cfg.Style == nil {
+		cfg.Style = &StyleConfig{}
+	}
+
+	if cfg.Style.Global == nil {
+		cfg.Style.Global = &GlobalStyleConfig{}
+	}
+
+	if cfg.Style.Border == nil {
+		cfg.Style.Border = &BorderStyleConfig{}
+	}
+
 	return cfg, nil
 }

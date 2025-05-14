@@ -30,8 +30,6 @@ func main() {
 		fmt.Printf("Failed to start program: %v", err)
 		os.Exit(1)
 	}
-
-	clear()
 }
 
 func clear() {
