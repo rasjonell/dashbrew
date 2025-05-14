@@ -77,6 +77,7 @@ For comprehensive documentation on all features, please refer to our [GitHub Wik
 
 - [Layout System](https://github.com/rasjonell/dashbrew/wiki/https://github.com/rasjonell/dashbrew/wiki/Layout-System)
 - [Components](https://github.com/rasjonell/dashbrew/wiki/Components)
+- [Styling Options](https://github.com/rasjonell/dashbrew/wiki/Styling-Options)
 
 ## Basic Examples
 
