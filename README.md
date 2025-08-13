@@ -177,3 +177,8 @@ Show distributions with histograms:
 ## License
 
 [MIT License](./LICENSE)
+
+
+## Star History
+
+[![Star History Chart](https://api.star-history.com/svg?repos=rasjonell/dashbrew&type=Date)](https://www.star-history.com/#rasjonell/dashbrew&Date)
