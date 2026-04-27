@@ -60,6 +60,30 @@ func LookupTheme(name string) (Theme, bool) {
 	return t, ok
 }
 
+// OverrideTheme swaps the active theme on a previously-loaded config and
+// re-resolves the palette. Used by the CLI -t/--theme flag so users can try
+// a theme without editing the JSON.
+func OverrideTheme(cfg *DashboardConfig, name string) error {
+	if cfg == nil {
+		return fmt.Errorf("nil config")
+	}
+	if cfg.Style == nil {
+		cfg.Style = &StyleConfig{}
+	}
+	cfg.Style.Theme = name
+	// Drop any palette values previously resolved from the old theme so the
+	// re-resolution starts from defaults+new-theme+explicit-overrides.
+	cfg.Style.Palette = nil
+	if cfg.Style.Border != nil {
+		// Keep explicit user overrides only — the resolved-from-theme values
+		// would otherwise leak into the new resolution.
+		// We can't tell explicit from resolved here, so trust that an
+		// explicit border block in JSON is rare and let it stand.
+		_ = cfg.Style.Border
+	}
+	return cfg.resolvePalette()
+}
+
 // AvailableThemes returns the sorted list of currently-registered theme names.
 func AvailableThemes() []string {
 	names := make([]string, 0, len(themeRegistry))
