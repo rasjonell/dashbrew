@@ -21,6 +21,8 @@ type model struct {
 
 	componentBoxes map[string]*boundingBox
 	navMap         map[string]*navigationMap
+
+	errorModal *errorModalState
 }
 
 type componentOutput struct {
@@ -181,6 +183,13 @@ func (m *model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.components[msg.ComponentID] = updated
 			cmds = append(cmds, cmd)
 		}
+		m.errorModal = &errorModalState{
+			Command:  msg.Command,
+			ExitCode: msg.ExitCode,
+			Stderr:   msg.Stderr,
+			Err:      msg.Err,
+			Label:    msg.Label,
+		}
 
 	case tea.MouseMsg:
 		if msg.Button == tea.MouseButtonLeft && msg.Action == tea.MouseActionPress {
@@ -197,6 +206,13 @@ func (m *model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case tea.KeyMsg:
 		if key.Matches(msg, keys.Quit) {
 			return m, tea.Quit
+		}
+
+		if m.errorModal != nil {
+			if msg.String() == "esc" {
+				m.errorModal = nil
+			}
+			return m, nil
 		}
 
 		if m.isAdding {
@@ -294,6 +310,10 @@ func (m *model) View() string {
 	}
 	if m.width == 0 || m.height == 0 {
 		return "Resizing..."
+	}
+
+	if m.errorModal != nil {
+		return m.renderErrorModal()
 	}
 
 	return m.renderNode(
