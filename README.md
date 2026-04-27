@@ -172,7 +172,62 @@ Show distributions with histograms:
 - `A`: Add item (in todo lists)
 - `Space`: Toggle item state (in todo lists)
 - `R`: Refresh data for the focused component
+- `Ctrl+K`: Open the action palette (lists every binding from every component, fuzzy filterable)
 - `Ctrl+C`: Quit
+
+## Component Interactivity (v2)
+
+Each component can declare a list of **bindings** that map a key chord to a shell action. Pressing the key when that component is focused runs the action; the same actions are also reachable via the global `Ctrl+K` palette.
+
+```jsonc
+{
+  "type": "component",
+  "component": {
+    "id": "logs",
+    "type": "text",
+    "title": "📜 Logs",
+    "data": { "source": "script", "command": "tail -n 50 ./app.log", "refresh_interval": 5 },
+    "bindings": [
+      {
+        "key": "f",
+        "label": "Show last 500 lines",
+        "action": {
+          "type": "replace_pane",
+          "command": "tail -n 500 ./app.log",
+          "output_as": "text"
+        }
+      },
+      {
+        "key": "c",
+        "label": "Clear log file",
+        "action": { "type": "fire_and_forget", "command": ": > ./app.log" }
+      }
+    ]
+  }
+}
+```
+
+### Action types
+
+- **`fire_and_forget`** — runs the command in the background and discards its output. The pane stays unchanged. Good for "open weather.app", "trigger refresh", "clear logs".
+- **`replace_pane`** — runs the command, then replaces the pane's content with its stdout until you reset. Scheduled refresh is paused while the action result is sticky. Press **R** to refetch the original data and resume the schedule, or **Esc** to just clear the action state without refetching.
+
+### Output rendering for `replace_pane`
+
+- `output_as: "text"` (default) — stdout is shown as raw scrollable text.
+- `output_as: "inherit"` — stdout is parsed by the focused component's existing data parser. So a chart action expects newline-separated numbers, a histogram action expects `key: count` lines or a JSON object, a table action expects JSON rows, etc. Not supported on `todo` (its data path is file-based).
+
+### Reserved keys
+
+These keys are reserved by dashbrew and cannot be used as binding keys:
+
+`ctrl+c`, `ctrl+k`, `shift+up/down/left/right`, `H`, `J`, `K`, `L`, `a`, `A`, `r`, `R`, `esc`
+
+In addition, each component type has its own **internal keys** (e.g. `space` toggles a todo item, viewport-style components consume `up/down/pgup/pgdown/home/end` for scrolling). Bindings on a component cannot use that type's internal keys. Both checks happen at config load time with a clear error.
+
+### `timeout_seconds`
+
+Each action can declare `timeout_seconds` (default 30). The shell process is killed via `context.WithTimeout` and surfaces an error modal on timeout. Long-running stream commands (e.g. `tail -f`) are not supported in v2 — use a snapshot like `tail -n 500 file.log` instead.
 
 ## License
 

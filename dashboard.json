@@ -4,8 +4,7 @@
       "type": "thicc",
       "color": "#888888",
       "focusedColor": "#444444"
-    },
-    "borderType": "thicc"
+    }
   },
   "layout": {
     "type": "container",
@@ -26,7 +25,26 @@
               "data": {
                 "source": "script",
                 "command": "cat ./dashboard.json"
-              }
+              },
+              "bindings": [
+                {
+                  "key": "f",
+                  "label": "Show full README",
+                  "action": {
+                    "type": "replace_pane",
+                    "command": "cat ./README.md",
+                    "output_as": "text"
+                  }
+                },
+                {
+                  "key": "o",
+                  "label": "Open dashboard.json in editor",
+                  "action": {
+                    "type": "fire_and_forget",
+                    "command": "${EDITOR:-vi} ./dashboard.json &"
+                  }
+                }
+              ]
             }
           },
           {
@@ -114,7 +132,18 @@
                 "refresh_interval": 1,
                 "refresh_mode": "append",
                 "caption": "Random Script Values(append mode)"
-              }
+              },
+              "bindings": [
+                {
+                  "key": "g",
+                  "label": "Snapshot 30 random values",
+                  "action": {
+                    "type": "replace_pane",
+                    "command": "./random_numbers.sh 30",
+                    "output_as": "inherit"
+                  }
+                }
+              ]
             }
           },
           {
