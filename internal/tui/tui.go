@@ -24,7 +24,9 @@ type model struct {
 	componentBoxes map[string]*boundingBox
 	navMap         map[string]*navigationMap
 
-	errorModal *errorModalState
+	errorModal             *errorModalState
+	palette                paletteState
+	prevFocusBeforePalette string
 }
 
 type componentOutput struct {
@@ -33,13 +35,14 @@ type componentOutput struct {
 }
 
 type keyMap struct {
-	Up      key.Binding
-	Add     key.Binding
-	Down    key.Binding
-	Left    key.Binding
-	Quit    key.Binding
-	Right   key.Binding
-	Refresh key.Binding
+	Up           key.Binding
+	Add          key.Binding
+	Down         key.Binding
+	Left         key.Binding
+	Quit         key.Binding
+	Right        key.Binding
+	Refresh      key.Binding
+	PaletteOpen  key.Binding
 }
 
 var keys = keyMap{
@@ -63,6 +66,9 @@ var keys = keyMap{
 	),
 	Refresh: key.NewBinding(
 		key.WithKeys("r", "R"),
+	),
+	PaletteOpen: key.NewBinding(
+		key.WithKeys("ctrl+k"),
 	),
 }
 
@@ -144,6 +150,7 @@ func (m *model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.WindowSizeMsg:
 		m.handleResize(msg.Width, msg.Height)
+		m.resizePalette()
 
 	case fetchResultMsg:
 		if comp, ok := m.components[msg.ID]; ok {
@@ -238,6 +245,19 @@ func (m *model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			if msg.String() == "esc" {
 				m.errorModal = nil
 			}
+			return m, nil
+		}
+
+		if m.palette.open {
+			cmd := m.handlePaletteKey(msg)
+			if cmd != nil {
+				cmds = append(cmds, cmd)
+			}
+			return m, tea.Batch(cmds...)
+		}
+
+		if key.Matches(msg, keys.PaletteOpen) {
+			m.openPalette()
 			return m, nil
 		}
 
@@ -340,6 +360,10 @@ func (m *model) View() string {
 
 	if m.errorModal != nil {
 		return m.renderErrorModal()
+	}
+
+	if m.palette.open {
+		return m.renderPalette()
 	}
 
 	return m.renderNode(
