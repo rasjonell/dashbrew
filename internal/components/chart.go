@@ -86,6 +86,10 @@ func (c *ChartComponent) View(w, h int, focused bool) string {
 }
 
 func (c *ChartComponent) Update(msg tea.Msg) (Component, tea.Cmd) {
+	newInstance := *c
+	if cmd, handled := tickActionSpinner(&newInstance.baseComponent, msg); handled {
+		return &newInstance, cmd
+	}
 	return c, nil
 }
 
@@ -119,8 +123,8 @@ func (c *ChartComponent) HandleAddMode(msg tea.KeyMsg) (Component, bool, tea.Cmd
 
 func (c *ChartComponent) BeginAction(label, outputAs, pendingID string) (Component, tea.Cmd) {
 	newInstance := *c
-	newInstance.beginAction(label, outputAs, pendingID)
-	return &newInstance, nil
+	tick := newInstance.beginAction(label, outputAs, pendingID)
+	return &newInstance, tick
 }
 
 func (c *ChartComponent) ApplyActionResult(pendingID, out, outputAs string) (Component, tea.Cmd) {

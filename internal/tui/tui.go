@@ -2,6 +2,7 @@ package tui
 
 import (
 	"github.com/charmbracelet/bubbles/key"
+	"github.com/charmbracelet/bubbles/spinner"
 	"github.com/charmbracelet/bubbletea"
 	"github.com/rasjonell/dashbrew/internal/components"
 	"github.com/rasjonell/dashbrew/internal/config"
@@ -189,6 +190,18 @@ func (m *model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			Stderr:   msg.Stderr,
 			Err:      msg.Err,
 			Label:    msg.Label,
+		}
+
+	case spinner.TickMsg:
+		// fan-out: any component currently loading consumes the tick.
+		// Components not loading discard via tickActionSpinner.
+		for id, comp := range m.components {
+			if !comp.ActionLoading() {
+				continue
+			}
+			updated, cmd := comp.Update(msg)
+			m.components[id] = updated
+			cmds = append(cmds, cmd)
 		}
 
 	case tea.MouseMsg:

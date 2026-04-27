@@ -81,8 +81,12 @@ func (c *TextComponent) SetContent(result data.FetchOutput) (Component, tea.Cmd)
 }
 
 func (c *TextComponent) Update(msg tea.Msg) (Component, tea.Cmd) {
-	var cmd tea.Cmd
+	newInstance := *c
+	if cmd, handled := tickActionSpinner(&newInstance.baseComponent, msg); handled {
+		return &newInstance, cmd
+	}
 
+	var cmd tea.Cmd
 	switch msg.(type) {
 	case tea.KeyMsg, tea.MouseMsg:
 		c.viewport, cmd = c.viewport.Update(msg)
@@ -97,8 +101,8 @@ func (c *TextComponent) HandleAddMode(msg tea.KeyMsg) (Component, bool, tea.Cmd)
 
 func (c *TextComponent) BeginAction(label, outputAs, pendingID string) (Component, tea.Cmd) {
 	newInstance := *c
-	newInstance.beginAction(label, outputAs, pendingID)
-	return &newInstance, nil
+	tick := newInstance.beginAction(label, outputAs, pendingID)
+	return &newInstance, tick
 }
 
 func (c *TextComponent) ApplyActionResult(pendingID, out, outputAs string) (Component, tea.Cmd) {

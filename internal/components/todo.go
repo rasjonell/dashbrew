@@ -94,6 +94,10 @@ func (c *TodoComponent) View(w, h int, focused bool) string {
 func (c *TodoComponent) Update(msg tea.Msg) (Component, tea.Cmd) {
 	newInstance := *c
 
+	if cmd, handled := tickActionSpinner(&newInstance.baseComponent, msg); handled {
+		return &newInstance, cmd
+	}
+
 	var cmd tea.Cmd
 	var cmds []tea.Cmd
 
@@ -257,8 +261,8 @@ func (c *TodoComponent) writeTodos() {
 
 func (c *TodoComponent) BeginAction(label, outputAs, pendingID string) (Component, tea.Cmd) {
 	newInstance := *c
-	newInstance.beginAction(label, outputAs, pendingID)
-	return &newInstance, nil
+	tick := newInstance.beginAction(label, outputAs, pendingID)
+	return &newInstance, tick
 }
 
 func (c *TodoComponent) ApplyActionResult(pendingID, out, outputAs string) (Component, tea.Cmd) {

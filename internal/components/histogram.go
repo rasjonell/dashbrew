@@ -91,8 +91,12 @@ func (c *HistogramComponent) View(w, h int, focused bool) string {
 }
 
 func (c *HistogramComponent) Update(msg tea.Msg) (Component, tea.Cmd) {
-	var cmd tea.Cmd
+	newInstance := *c
+	if cmd, handled := tickActionSpinner(&newInstance.baseComponent, msg); handled {
+		return &newInstance, cmd
+	}
 
+	var cmd tea.Cmd
 	switch msg.(type) {
 	case tea.KeyMsg, tea.MouseMsg:
 		c.viewport, cmd = c.viewport.Update(msg)
@@ -108,8 +112,8 @@ func (c *HistogramComponent) HandleAddMode(msg tea.KeyMsg) (Component, bool, tea
 
 func (c *HistogramComponent) BeginAction(label, outputAs, pendingID string) (Component, tea.Cmd) {
 	newInstance := *c
-	newInstance.beginAction(label, outputAs, pendingID)
-	return &newInstance, nil
+	tick := newInstance.beginAction(label, outputAs, pendingID)
+	return &newInstance, tick
 }
 
 func (c *HistogramComponent) ApplyActionResult(pendingID, out, outputAs string) (Component, tea.Cmd) {

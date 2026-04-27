@@ -72,6 +72,11 @@ func (c *ListComponent) View(w, h int, focused bool) string {
 }
 
 func (c *ListComponent) Update(msg tea.Msg) (Component, tea.Cmd) {
+	newInstance := *c
+	if cmd, handled := tickActionSpinner(&newInstance.baseComponent, msg); handled {
+		return &newInstance, cmd
+	}
+
 	var cmd tea.Cmd
 	switch msg.(type) {
 	case tea.KeyMsg, tea.MouseMsg:
@@ -105,8 +110,8 @@ func (c *ListComponent) HandleAddMode(msg tea.KeyMsg) (Component, bool, tea.Cmd)
 
 func (c *ListComponent) BeginAction(label, outputAs, pendingID string) (Component, tea.Cmd) {
 	newInstance := *c
-	newInstance.beginAction(label, outputAs, pendingID)
-	return &newInstance, nil
+	tick := newInstance.beginAction(label, outputAs, pendingID)
+	return &newInstance, tick
 }
 
 func (c *ListComponent) ApplyActionResult(pendingID, out, outputAs string) (Component, tea.Cmd) {

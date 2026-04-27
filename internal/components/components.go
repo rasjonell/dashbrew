@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"github.com/charmbracelet/bubbles/key"
+	"github.com/charmbracelet/bubbles/spinner"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
 	"github.com/rasjonell/dashbrew/internal/config"
@@ -93,12 +94,13 @@ func NewComponent(cfg *config.Component, styles *config.StyleConfig) Component {
 // once `active` is true, the component keeps showing the action output until
 // ResetAction is called (R / Esc when focused).
 type actionState struct {
-	active        bool
-	loading       bool
-	output        string
-	label         string
-	outputAs      string
-	pendingID     string // mints per-action so late-arriving results can be discarded after a reset
+	active    bool
+	loading   bool
+	output    string
+	label     string
+	outputAs  string
+	pendingID string // mints per-action so late-arriving results can be discarded after a reset
+	spinner   spinner.Model
 }
 
 type baseComponent struct {
@@ -128,14 +130,18 @@ func (b baseComponent) Bindings() []config.Binding {
 
 // beginAction transitions the component into loading state. Concrete components
 // call this after cloning themselves (newInstance := *c) so the mutation is
-// scoped to the new value returned to bubbletea.
-func (b *baseComponent) beginAction(label, outputAs, pendingID string) {
+// scoped to the new value returned to bubbletea. The returned tea.Cmd kicks
+// off the first spinner tick — concrete components must include it in the
+// Batch they return from BeginAction.
+func (b *baseComponent) beginAction(label, outputAs, pendingID string) tea.Cmd {
 	b.action.loading = true
 	b.action.active = false
 	b.action.label = label
 	b.action.outputAs = outputAs
 	b.action.pendingID = pendingID
 	b.action.output = ""
+	b.action.spinner = spinner.New(spinner.WithSpinner(spinner.Dot))
+	return b.action.spinner.Tick
 }
 
 // applyActionResult reports whether the result should be installed (true) or
@@ -153,6 +159,21 @@ func (b *baseComponent) applyActionResult(pendingID, out string) bool {
 
 func (b *baseComponent) resetAction() {
 	b.action = actionState{}
+}
+
+// tickActionSpinner forwards a spinner.TickMsg to the loading spinner of a
+// component. Concrete Update methods call this on a freshly cloned base; if
+// handled is true they return the new instance with the returned cmd.
+func tickActionSpinner(b *baseComponent, msg tea.Msg) (tea.Cmd, bool) {
+	if !b.action.loading {
+		return nil, false
+	}
+	if _, ok := msg.(spinner.TickMsg); !ok {
+		return nil, false
+	}
+	var cmd tea.Cmd
+	b.action.spinner, cmd = b.action.spinner.Update(msg)
+	return cmd, true
 }
 
 // renderActionOverlay renders a component's pane while it is loading or
@@ -174,10 +195,12 @@ func renderActionOverlay(b baseComponent, w, h int, focused bool) string {
 	var content string
 	switch {
 	case b.action.loading:
-		msg := "Running: " + b.action.label
-		if msg == "Running: " {
-			msg = "Running…"
+		label := b.action.label
+		if label == "" {
+			label = "action"
 		}
+		spinnerView := b.action.spinner.View()
+		msg := spinnerView + " Running: " + label
 		if innerWidth < 10 || contentHeight < 3 {
 			msg = "[…]"
 		}
