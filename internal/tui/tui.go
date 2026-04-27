@@ -6,6 +6,7 @@ import (
 	"github.com/charmbracelet/bubbletea"
 	"github.com/rasjonell/dashbrew/internal/components"
 	"github.com/rasjonell/dashbrew/internal/config"
+	"github.com/rasjonell/dashbrew/internal/data"
 )
 
 type model struct {
@@ -173,9 +174,21 @@ func (m *model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	case actionResultMsg:
 		if comp, ok := m.components[msg.ComponentID]; ok {
-			updated, cmd := comp.ApplyActionResult(msg.PendingID, msg.Stdout, msg.OutputAs)
-			m.components[msg.ComponentID] = updated
-			cmds = append(cmds, cmd)
+			if msg.OutputAs == "inherit" {
+				// route through SetContent so the component's existing parser
+				// runs (chart parses numbers, list parses lines, etc.) — then
+				// apply the sticky action state on top so refresh is paused
+				// and R/Esc reset the pane.
+				out := data.NewFetchOutput(msg.Stdout, nil)
+				parsed, setCmd := comp.SetContent(out)
+				updated, applyCmd := parsed.ApplyActionResult(msg.PendingID, msg.Stdout, msg.OutputAs)
+				m.components[msg.ComponentID] = updated
+				cmds = append(cmds, setCmd, applyCmd)
+			} else {
+				updated, cmd := comp.ApplyActionResult(msg.PendingID, msg.Stdout, msg.OutputAs)
+				m.components[msg.ComponentID] = updated
+				cmds = append(cmds, cmd)
+			}
 		}
 
 	case actionFailedMsg:
