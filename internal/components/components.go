@@ -335,10 +335,11 @@ func (b baseComponent) renderHeader(border lipgloss.Border, focused bool, innerW
 }
 
 func (b baseComponent) renderFooter(w int, percent float64, caption string) string {
+	dim := PaletteColor(b.styles, "dim", lipgloss.Color("#808080"))
 	percentStr := fmt.Sprintf("%3.f%% ⥮ ", percent*100)
 	percentWidth := lipgloss.Width(percentStr)
-	captionStyle := lipgloss.NewStyle().Width(w - percentWidth).AlignHorizontal(lipgloss.Center).Bold(true)
-	percentStyle := lipgloss.NewStyle().Width(w - captionStyle.GetWidth()).AlignHorizontal(lipgloss.Right)
+	captionStyle := lipgloss.NewStyle().Width(w - percentWidth).AlignHorizontal(lipgloss.Center).Foreground(dim)
+	percentStyle := lipgloss.NewStyle().Width(w - captionStyle.GetWidth()).AlignHorizontal(lipgloss.Right).Foreground(dim).Faint(true)
 
 	if caption != "" {
 		return lipgloss.JoinHorizontal(lipgloss.Left,
