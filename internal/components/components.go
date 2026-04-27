@@ -67,7 +67,7 @@ func NewComponent(cfg *config.Component, styles *config.StyleConfig) Component {
 	base := baseComponent{
 		id:     id,
 		config: cfg,
-		styles: styles,
+		styles: config.EffectiveStyles(styles, cfg),
 	}
 
 	switch cfg.Type {

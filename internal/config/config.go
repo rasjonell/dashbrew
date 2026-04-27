@@ -31,12 +31,63 @@ type Component struct {
 }
 
 // ComponentStyleConfig carries per-component visual overrides on top of the
-// dashboard-wide theme. Fields are populated incrementally as features land
-// (histogram bar coloring first; chart/table/todo extras follow).
+// dashboard-wide theme. Generic fields apply to all components; named fields
+// are component-type specific.
 type ComponentStyleConfig struct {
+	// Generic overrides (any component)
+	Palette    *PaletteConfig `json:"palette,omitempty"`    // override role colors for this pane only
+	BorderType string         `json:"borderType,omitempty"` // override border style for this pane only
+
 	// Histogram
 	BarStyle  string            `json:"barStyle,omitempty"`  // "single" | "alternate" | "gradient" | "map"
 	BarColors map[string]string `json:"barColors,omitempty"` // per-bin overrides for "map" style
+}
+
+// EffectiveStyles returns a per-component style config: a clone of the
+// dashboard-wide style with the component's own style block layered on top.
+// Used by the components package when constructing each pane.
+func EffectiveStyles(global *StyleConfig, comp *Component) *StyleConfig {
+	if global == nil {
+		global = &StyleConfig{}
+	}
+	eff := &StyleConfig{
+		Theme:   global.Theme,
+		Global:  global.Global,
+		Palette: clonePalette(global.Palette),
+		Border:  cloneBorder(global.Border),
+	}
+	if comp == nil || comp.Style == nil {
+		return eff
+	}
+	if comp.Style.Palette != nil {
+		if eff.Palette == nil {
+			eff.Palette = &PaletteConfig{}
+		}
+		mergePaletteInto(eff.Palette, comp.Style.Palette)
+	}
+	if comp.Style.BorderType != "" {
+		if eff.Border == nil {
+			eff.Border = &BorderStyleConfig{}
+		}
+		eff.Border.Type = comp.Style.BorderType
+	}
+	return eff
+}
+
+func clonePalette(p *PaletteConfig) *PaletteConfig {
+	if p == nil {
+		return nil
+	}
+	c := *p
+	return &c
+}
+
+func cloneBorder(b *BorderStyleConfig) *BorderStyleConfig {
+	if b == nil {
+		return nil
+	}
+	c := *b
+	return &c
 }
 
 type Binding struct {
