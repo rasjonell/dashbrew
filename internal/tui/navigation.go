@@ -42,7 +42,7 @@ func (m *model) handleResize(msgWidth, msgHeight int) {
 	}
 
 	newBoxes := make(map[string]*boundingBox)
-	calculateBoundingBoxes(m.cfg.Layout, 0, 0, w, h, newBoxes)
+	calculateBoundingBoxes(m.cfg.Layout, 0, 0, w, h, layoutGap(m.cfg.Style), newBoxes)
 	m.componentBoxes = newBoxes
 
 	m.navMap = calculateNavigationMap(m.componentBoxes)
@@ -70,7 +70,7 @@ func (m *model) tryFocus(targetID string) {
 
 func calculateBoundingBoxes(
 	node *config.LayoutNode,
-	x, y, width, height int,
+	x, y, width, height, gap int,
 	boxes map[string]*boundingBox,
 ) {
 	if node == nil || width <= 0 || height <= 0 {
@@ -97,8 +97,16 @@ func calculateBoundingBoxes(
 			totalFlex += components.GetFlex(child.Flex)
 		}
 
-		offset := 0
 		numChildren := len(node.Children)
+		totalGap := gap * max(0, numChildren-1)
+		availableW, availableH := w, h
+		if node.Direction == "row" {
+			availableW = max(0, w-totalGap)
+		} else {
+			availableH = max(0, h-totalGap)
+		}
+
+		offset := 0
 		for i, child := range node.Children {
 			flex := components.GetFlex(child.Flex)
 
@@ -106,29 +114,29 @@ func calculateBoundingBoxes(
 
 			var childX, childY, childW, childH int
 			if node.Direction == "row" {
-				childX = x + offset
+				childX = x + offset + (gap * i)
 				childY = y
 				childH = h
 				if isLast {
-					childW = w - offset
+					childW = availableW - offset
 				} else {
-					childW = w * flex / totalFlex
+					childW = availableW * flex / totalFlex
 				}
 				offset += childW
 			} else {
 				childX = x
-				childY = y + offset
+				childY = y + offset + (gap * i)
 				childW = w
 
 				if isLast {
-					childH = h - offset
+					childH = availableH - offset
 				} else {
-					childH = h * flex / totalFlex
+					childH = availableH * flex / totalFlex
 				}
 				offset += childH
 			}
 
-			calculateBoundingBoxes(child, childX, childY, childW, childH, boxes)
+			calculateBoundingBoxes(child, childX, childY, childW, childH, gap, boxes)
 		}
 	}
 }

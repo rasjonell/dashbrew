@@ -81,9 +81,18 @@ func (m *model) renderNode(
 			totalFlex += components.GetFlex(child.Flex)
 		}
 
-		offset := 0
 		numChildren := len(node.Children)
+		gap := layoutGap(m.cfg.Style)
+		totalGap := gap * max(0, numChildren-1)
 
+		availableW, availableH := width, height
+		if node.Direction == "row" {
+			availableW = max(0, width-totalGap)
+		} else {
+			availableH = max(0, height-totalGap)
+		}
+
+		offset := 0
 		var rendered []string
 
 		for i, child := range node.Children {
@@ -94,17 +103,17 @@ func (m *model) renderNode(
 			if node.Direction == "row" {
 				childHeight = height
 				if isLast {
-					childWidth = width - offset
+					childWidth = availableW - offset
 				} else {
-					childWidth = width * flex / totalFlex
+					childWidth = availableW * flex / totalFlex
 				}
 				offset += childWidth
 			} else {
 				childWidth = width
 				if isLast {
-					childHeight = height - offset
+					childHeight = availableH - offset
 				} else {
-					childHeight = height * flex / totalFlex
+					childHeight = availableH * flex / totalFlex
 				}
 				offset += childHeight
 			}
@@ -113,10 +122,11 @@ func (m *model) renderNode(
 		}
 
 		if node.Direction == "row" {
-			return lipgloss.JoinHorizontal(lipgloss.Top, rendered...)
+			parts := interleaveRow(rendered, gap, height)
+			return lipgloss.JoinHorizontal(lipgloss.Top, parts...)
 		}
-
-		return lipgloss.JoinVertical(lipgloss.Left, rendered...)
+		parts := interleaveColumn(rendered, gap, width)
+		return lipgloss.JoinVertical(lipgloss.Left, parts...)
 
 	default:
 		w, h := components.CalcWidthHeight(width, height)
@@ -127,6 +137,51 @@ func (m *model) renderNode(
 			BorderForeground(lipgloss.Color("#ff0000")).
 			Render(fmt.Sprintf("[Unknown Layout Type: %s]", node.Type))
 	}
+}
+
+func layoutGap(s *config.StyleConfig) int {
+	if s == nil || s.Layout == nil {
+		return 0
+	}
+	g := s.Layout.Gap
+	if g < 0 {
+		return 0
+	}
+	return g
+}
+
+// interleaveRow inserts a `gap`-wide whitespace column between each rendered
+// child of a row container.
+func interleaveRow(children []string, gap, height int) []string {
+	if gap <= 0 || len(children) < 2 {
+		return children
+	}
+	spacer := lipgloss.NewStyle().Width(gap).Height(height).Render("")
+	out := make([]string, 0, len(children)*2-1)
+	for i, c := range children {
+		if i > 0 {
+			out = append(out, spacer)
+		}
+		out = append(out, c)
+	}
+	return out
+}
+
+// interleaveColumn inserts a `gap`-tall whitespace row between each rendered
+// child of a column container.
+func interleaveColumn(children []string, gap, width int) []string {
+	if gap <= 0 || len(children) < 2 {
+		return children
+	}
+	spacer := lipgloss.NewStyle().Width(width).Height(gap).Render("")
+	out := make([]string, 0, len(children)*2-1)
+	for i, c := range children {
+		if i > 0 {
+			out = append(out, spacer)
+		}
+		out = append(out, c)
+	}
+	return out
 }
 
 func evenWidthHeight(w, h int) (newW, newH int) {

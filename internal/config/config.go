@@ -127,7 +127,12 @@ type StyleConfig struct {
 	Palette   *PaletteConfig     `json:"palette,omitempty"`
 	Global    *GlobalStyleConfig `json:"global,omitempty"`
 	Border    *BorderStyleConfig `json:"border,omitempty"`
+	Layout    *LayoutStyleConfig `json:"layout,omitempty"`
 	FocusMode string             `json:"focusMode,omitempty"` // "" (default) | "highlight" → dim non-focused panes
+}
+
+type LayoutStyleConfig struct {
+	Gap int `json:"gap,omitempty"` // cells of whitespace between adjacent panes (default 0)
 }
 
 // PaletteConfig is the role-based color palette. Each field is a hex string
