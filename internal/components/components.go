@@ -302,21 +302,42 @@ func (b baseComponent) renderHeader(border lipgloss.Border, focused bool, innerW
 		title = b.config.Icon + " " + title
 	}
 
+	// Border sides on the title cell depend on the title's alignment so the
+	// cell visually anchors to the side of the pane the title sits on:
+	//   left   → right + bottom         (anchored to the left edge)
+	//   center → left + right + bottom  (free-floating)
+	//   right  → left + bottom          (anchored to the right edge)
+	align := b.config.TitleAlign
+	right, bottom, left := true, true, false
+	switch align {
+	case "center":
+		right, bottom, left = true, true, true
+	case "right":
+		right, bottom, left = false, true, true
+	}
+
 	titleStyle := lipgloss.NewStyle()
-	style := lipgloss.NewStyle().Border(border, false, true, true, false).Padding(0, 1)
+	style := lipgloss.NewStyle().Border(border, false, right, bottom, left).Padding(0, 1)
 
 	if focused {
 		titleStyle = titleStyle.Bold(true)
 		if b.styles != nil && b.styles.Border != nil {
 			color := GetColor(b.styles.Border.FocusedColor, lipgloss.Color("default"))
 			titleStyle = titleStyle.Foreground(color)
-			style = style.BorderRightForeground(color).BorderBottomForeground(color)
+			if right {
+				style = style.BorderRightForeground(color)
+			}
+			if bottom {
+				style = style.BorderBottomForeground(color)
+			}
+			if left {
+				style = style.BorderLeftForeground(color)
+			}
 		}
 	}
 
 	cell := style.Render(titleStyle.Render(title))
 
-	align := b.config.TitleAlign
 	if align == "" || innerWidth <= 0 {
 		return cell
 	}
