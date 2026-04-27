@@ -20,10 +20,24 @@ type LayoutNode struct {
 }
 
 type Component struct {
-	Type  string      `json:"type"`
-	Title string      `json:"title"`
-	Data  *DataConfig `json:"data"`
-	ID    string      `json:"id,omitempty"`
+	Type     string      `json:"type"`
+	Title    string      `json:"title"`
+	Data     *DataConfig `json:"data"`
+	ID       string      `json:"id,omitempty"`
+	Bindings []Binding   `json:"bindings,omitempty"`
+}
+
+type Binding struct {
+	Key    string       `json:"key"`
+	Label  string       `json:"label"`
+	Action ActionConfig `json:"action"`
+}
+
+type ActionConfig struct {
+	Type           string `json:"type"`
+	Command        string `json:"command"`
+	OutputAs       string `json:"output_as,omitempty"`
+	TimeoutSeconds int    `json:"timeout_seconds,omitempty"`
 }
 
 type DataConfig struct {
