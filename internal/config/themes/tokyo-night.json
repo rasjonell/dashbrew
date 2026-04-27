@@ -1,0 +1,14 @@
+{
+  "name": "tokyo-night",
+  "palette": {
+    "background": "#1a1b26",
+    "foreground": "#c0caf5",
+    "dim": "#565f89",
+    "accent": "#7aa2f7",
+    "success": "#9ece6a",
+    "warning": "#e0af68",
+    "error": "#f7768e",
+    "border": "#414868",
+    "borderFocused": "#7aa2f7"
+  }
+}

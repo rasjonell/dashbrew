@@ -1,0 +1,14 @@
+{
+  "name": "nord",
+  "palette": {
+    "background": "#2e3440",
+    "foreground": "#d8dee9",
+    "dim": "#4c566a",
+    "accent": "#88c0d0",
+    "success": "#a3be8c",
+    "warning": "#ebcb8b",
+    "error": "#bf616a",
+    "border": "#4c566a",
+    "borderFocused": "#88c0d0"
+  }
+}

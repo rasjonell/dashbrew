@@ -1,0 +1,14 @@
+{
+  "name": "gruvbox-dark",
+  "palette": {
+    "background": "#282828",
+    "foreground": "#ebdbb2",
+    "dim": "#7c6f64",
+    "accent": "#fabd2f",
+    "success": "#b8bb26",
+    "warning": "#fe8019",
+    "error": "#fb4934",
+    "border": "#504945",
+    "borderFocused": "#fabd2f"
+  }
+}

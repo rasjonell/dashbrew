@@ -1,0 +1,14 @@
+{
+  "name": "catppuccin-mocha",
+  "palette": {
+    "background": "#1e1e2e",
+    "foreground": "#cdd6f4",
+    "dim": "#6c7086",
+    "accent": "#cba6f7",
+    "success": "#a6e3a1",
+    "warning": "#f9e2af",
+    "error": "#f38ba8",
+    "border": "#45475a",
+    "borderFocused": "#cba6f7"
+  }
+}

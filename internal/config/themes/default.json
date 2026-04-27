@@ -1,0 +1,14 @@
+{
+  "name": "default",
+  "palette": {
+    "background": "",
+    "foreground": "",
+    "dim": "#808080",
+    "accent": "#5fafff",
+    "success": "#5faf5f",
+    "warning": "#d7af5f",
+    "error": "#d75f5f",
+    "border": "#888888",
+    "borderFocused": "#bd93f9"
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "name": "solarized-light",
+  "palette": {
+    "background": "#fdf6e3",
+    "foreground": "#586e75",
+    "dim": "#93a1a1",
+    "accent": "#268bd2",
+    "success": "#859900",
+    "warning": "#b58900",
+    "error": "#dc322f",
+    "border": "#93a1a1",
+    "borderFocused": "#268bd2"
+  }
+}

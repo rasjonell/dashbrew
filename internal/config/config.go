@@ -60,8 +60,25 @@ type ColumnConfig struct {
 }
 
 type StyleConfig struct {
-	Global *GlobalStyleConfig `json:"global,omitempty"`
-	Border *BorderStyleConfig `json:"border,omitempty"`
+	Theme   string             `json:"theme,omitempty"`
+	Palette *PaletteConfig     `json:"palette,omitempty"`
+	Global  *GlobalStyleConfig `json:"global,omitempty"`
+	Border  *BorderStyleConfig `json:"border,omitempty"`
+}
+
+// PaletteConfig is the role-based color palette. Each field is a hex string
+// (e.g. "#ff5555") or empty to fall back to the active theme's value, then
+// to the built-in default. Wired by Resolve() at config-load time.
+type PaletteConfig struct {
+	Background    string `json:"background,omitempty"`
+	Foreground    string `json:"foreground,omitempty"`
+	Dim           string `json:"dim,omitempty"`
+	Accent        string `json:"accent,omitempty"`
+	Success       string `json:"success,omitempty"`
+	Warning       string `json:"warning,omitempty"`
+	Error         string `json:"error,omitempty"`
+	Border        string `json:"border,omitempty"`
+	BorderFocused string `json:"borderFocused,omitempty"`
 }
 
 type GlobalStyleConfig struct {
@@ -96,6 +113,10 @@ func LoadConfig(path string) (*DashboardConfig, error) {
 
 	if cfg.Style.Border == nil {
 		cfg.Style.Border = &BorderStyleConfig{}
+	}
+
+	if err := cfg.resolvePalette(); err != nil {
+		return nil, err
 	}
 
 	if err := cfg.Validate(); err != nil {
