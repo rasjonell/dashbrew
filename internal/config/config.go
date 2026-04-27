@@ -98,5 +98,9 @@ func LoadConfig(path string) (*DashboardConfig, error) {
 		cfg.Style.Border = &BorderStyleConfig{}
 	}
 
+	if err := cfg.Validate(); err != nil {
+		return nil, err
+	}
+
 	return cfg, nil
 }
