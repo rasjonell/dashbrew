@@ -7,25 +7,35 @@ import (
 	"github.com/charmbracelet/bubbles/list"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
+	"github.com/rasjonell/dashbrew/internal/config"
 	"github.com/rasjonell/dashbrew/internal/data"
 )
 
 type TodoListItem struct {
 	*data.TodoOutput
-	Index int
+	Index  int
+	styles *config.StyleConfig
 }
 
 func (i TodoListItem) Title() string {
+	if i.TodoOutput.Done {
+		successColor := PaletteColor(i.styles, "success", lipgloss.Color("#5faf5f"))
+		box := lipgloss.NewStyle().Foreground(successColor).Render("[✓]")
+		text := lipgloss.NewStyle().Strikethrough(true).Faint(true).Render(i.TodoOutput.Title)
+		return fmt.Sprintf("%s %s", box, text)
+	}
+	return fmt.Sprintf("%s %s", "[ ]", i.TodoOutput.Title)
+}
+
+func (i TodoListItem) Description() string { return "" }
+func (i TodoListItem) FilterValue() string {
+	// Filter on plain text so users can search by raw title regardless of styles.
 	box := "[ ]"
 	if i.TodoOutput.Done {
 		box = "[x]"
 	}
-
 	return fmt.Sprintf("%s %s", box, i.TodoOutput.Title)
 }
-
-func (i TodoListItem) Description() string { return "" }
-func (i TodoListItem) FilterValue() string { return i.Title() }
 
 type TodoFetchOutput struct {
 	Err       error
@@ -135,6 +145,7 @@ func (c *TodoComponent) SetContent(result data.FetchOutput) (Component, tea.Cmd)
 				TodoOutput: &data.TodoOutput{
 					Title: fmt.Sprintf("[Error: %v]", todoRes.Error()),
 				},
+				styles: c.styles,
 			}
 			cmd = newInstance.list.SetItems([]list.Item{errorItem})
 			newInstance.items = []*data.TodoOutput{}
@@ -185,7 +196,7 @@ func (c *TodoComponent) HandleAddMode(msg tea.KeyMsg) (Component, bool, tea.Cmd)
 func (c *TodoComponent) updateListItems(selectIdx ...int) tea.Cmd {
 	listItems := make([]list.Item, len(c.items))
 	for i, item := range c.items {
-		listItems[i] = TodoListItem{TodoOutput: item, Index: i}
+		listItems[i] = TodoListItem{TodoOutput: item, Index: i, styles: c.styles}
 	}
 
 	newIdx := -1
