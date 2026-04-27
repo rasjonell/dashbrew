@@ -39,6 +39,10 @@ func newHistogramComponent(base baseComponent) *HistogramComponent {
 }
 
 func (c *HistogramComponent) View(w, h int, focused bool) string {
+	if c.inActionOverlayState() {
+		return renderActionOverlay(c.baseComponent, w, h, focused)
+	}
+
 	style, focusedStyle, border := GetBorderStyle(c.styles.Border)
 	borderStyle := style
 	if focused {
@@ -100,6 +104,26 @@ func (c *HistogramComponent) Update(msg tea.Msg) (Component, tea.Cmd) {
 
 func (c *HistogramComponent) HandleAddMode(msg tea.KeyMsg) (Component, bool, tea.Cmd) {
 	return c, true, nil
+}
+
+func (c *HistogramComponent) BeginAction(label, outputAs, pendingID string) (Component, tea.Cmd) {
+	newInstance := *c
+	newInstance.beginAction(label, outputAs, pendingID)
+	return &newInstance, nil
+}
+
+func (c *HistogramComponent) ApplyActionResult(pendingID, out, outputAs string) (Component, tea.Cmd) {
+	newInstance := *c
+	if !newInstance.applyActionResult(pendingID, out) {
+		return c, nil
+	}
+	return &newInstance, nil
+}
+
+func (c *HistogramComponent) ResetAction() (Component, tea.Cmd) {
+	newInstance := *c
+	newInstance.resetAction()
+	return &newInstance, nil
 }
 
 func (c *HistogramComponent) SetContent(result data.FetchOutput) (Component, tea.Cmd) {

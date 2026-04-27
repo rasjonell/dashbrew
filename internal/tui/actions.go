@@ -15,18 +15,6 @@ import (
 
 const defaultActionTimeout = 30 * time.Second
 
-// actionStartMsg flips a focused component into loading state at the moment
-// the user fires an action (key chord or palette pick). The runActionCmd is
-// dispatched in the same Batch so the spinner and the shell process start
-// together.
-type actionStartMsg struct {
-	ComponentID string
-	Label       string
-	OutputAs    string
-	Type        string
-	PendingID   string
-}
-
 // actionResultMsg is emitted when a replace_pane action exits successfully
 // (zero exit, within timeout). fire_and_forget actions never emit this.
 type actionResultMsg struct {
@@ -55,6 +43,33 @@ var actionCounter atomic.Uint64
 // component.
 func nextPendingID() string {
 	return fmt.Sprintf("act-%d", actionCounter.Add(1))
+}
+
+// matchBinding returns the binding whose Key (after normalization) matches the
+// pressed chord, or nil if none does.
+func matchBinding(bindings []config.Binding, chord string) *config.Binding {
+	chord = config.NormalizeKey(chord)
+	for i, b := range bindings {
+		if config.NormalizeKey(b.Key) == chord {
+			return &bindings[i]
+		}
+	}
+	return nil
+}
+
+// dispatchAction starts an action on a component: synchronously transitions
+// the component into loading state and returns the tea.Cmd that runs the
+// shell command and emits the result/failed message.
+func (m *model) dispatchAction(componentID, label string, a config.ActionConfig) tea.Cmd {
+	comp, ok := m.components[componentID]
+	if !ok {
+		return nil
+	}
+	pendingID := nextPendingID()
+	updated, beginCmd := comp.BeginAction(label, a.OutputAs, pendingID)
+	m.components[componentID] = updated
+	runCmd := runActionCmd(componentID, pendingID, label, a)
+	return tea.Batch(beginCmd, runCmd)
 }
 
 // runActionCmd builds the tea.Cmd that executes an action asynchronously.

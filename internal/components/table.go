@@ -34,6 +34,10 @@ func newTableComponent(base baseComponent) *TableComponent {
 }
 
 func (c *TableComponent) View(w, h int, focused bool) string {
+	if c.inActionOverlayState() {
+		return renderActionOverlay(c.baseComponent, w, h, focused)
+	}
+
 	style, focusedStyle, border := GetBorderStyle(c.styles.Border)
 	borderStyle := style
 	if focused {
@@ -111,6 +115,26 @@ func (c *TableComponent) SetContent(result data.FetchOutput) (Component, tea.Cmd
 
 func (c *TableComponent) HandleAddMode(msg tea.KeyMsg) (Component, bool, tea.Cmd) {
 	return c, true, nil
+}
+
+func (c *TableComponent) BeginAction(label, outputAs, pendingID string) (Component, tea.Cmd) {
+	newInstance := *c
+	newInstance.beginAction(label, outputAs, pendingID)
+	return &newInstance, nil
+}
+
+func (c *TableComponent) ApplyActionResult(pendingID, out, outputAs string) (Component, tea.Cmd) {
+	newInstance := *c
+	if !newInstance.applyActionResult(pendingID, out) {
+		return c, nil
+	}
+	return &newInstance, nil
+}
+
+func (c *TableComponent) ResetAction() (Component, tea.Cmd) {
+	newInstance := *c
+	newInstance.resetAction()
+	return &newInstance, nil
 }
 
 func (c *TableComponent) parseDataToTableRows(rawData string, columns []*config.ColumnConfig) ([]table.Row, error) {

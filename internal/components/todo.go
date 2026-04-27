@@ -65,6 +65,10 @@ func (c *TodoComponent) SupportsAdd() bool   { return true }
 func (c *TodoComponent) GetAddInput() string { return c.addInput }
 
 func (c *TodoComponent) View(w, h int, focused bool) string {
+	if c.inActionOverlayState() {
+		return renderActionOverlay(c.baseComponent, w, h, focused)
+	}
+
 	style, focusedStyle, border := GetBorderStyle(c.styles.Border)
 	borderStyle := style
 	if focused {
@@ -249,4 +253,24 @@ func (c *TodoComponent) writeTodos() {
 	} else {
 		c.err = nil
 	}
+}
+
+func (c *TodoComponent) BeginAction(label, outputAs, pendingID string) (Component, tea.Cmd) {
+	newInstance := *c
+	newInstance.beginAction(label, outputAs, pendingID)
+	return &newInstance, nil
+}
+
+func (c *TodoComponent) ApplyActionResult(pendingID, out, outputAs string) (Component, tea.Cmd) {
+	newInstance := *c
+	if !newInstance.applyActionResult(pendingID, out) {
+		return c, nil
+	}
+	return &newInstance, nil
+}
+
+func (c *TodoComponent) ResetAction() (Component, tea.Cmd) {
+	newInstance := *c
+	newInstance.resetAction()
+	return &newInstance, nil
 }

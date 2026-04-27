@@ -155,6 +155,20 @@ func (m *model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			cmds = append(cmds, fetchCmd, rescheduleCmd)
 		}
 
+	case actionResultMsg:
+		if comp, ok := m.components[msg.ComponentID]; ok {
+			updated, cmd := comp.ApplyActionResult(msg.PendingID, msg.Stdout, msg.OutputAs)
+			m.components[msg.ComponentID] = updated
+			cmds = append(cmds, cmd)
+		}
+
+	case actionFailedMsg:
+		if comp, ok := m.components[msg.ComponentID]; ok {
+			updated, cmd := comp.ResetAction()
+			m.components[msg.ComponentID] = updated
+			cmds = append(cmds, cmd)
+		}
+
 	case tea.MouseMsg:
 		if msg.Button == tea.MouseButtonLeft && msg.Action == tea.MouseActionPress {
 			m.focusClicked(msg.X, msg.Y)
@@ -220,6 +234,12 @@ func (m *model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}
 
 		default:
+			if focusedExists {
+				if b := matchBinding(focusedComp.Bindings(), msg.String()); b != nil {
+					cmds = append(cmds, m.dispatchAction(focusedComp.ID(), b.Label, b.Action))
+					break
+				}
+			}
 			if focusedExists && focusedComp.IsFocusable() {
 				updatedComp, cmd := focusedComp.Update(msg)
 				m.components[m.focusedComponentId] = updatedComp

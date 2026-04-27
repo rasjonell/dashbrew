@@ -2,6 +2,8 @@ package components
 
 import (
 	"fmt"
+	"strings"
+
 	"github.com/charmbracelet/bubbles/key"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
@@ -47,6 +49,10 @@ type Component interface {
 	Bindings() []config.Binding
 	ActionActive() bool
 	ActionLoading() bool
+
+	BeginAction(label, outputAs, pendingID string) (Component, tea.Cmd)
+	ApplyActionResult(pendingID, out, outputAs string) (Component, tea.Cmd)
+	ResetAction() (Component, tea.Cmd)
 
 	Init() tea.Cmd
 	View(w, h int, focused bool) string
@@ -120,6 +126,87 @@ func (b baseComponent) Bindings() []config.Binding {
 	return b.config.Bindings
 }
 
+// beginAction transitions the component into loading state. Concrete components
+// call this after cloning themselves (newInstance := *c) so the mutation is
+// scoped to the new value returned to bubbletea.
+func (b *baseComponent) beginAction(label, outputAs, pendingID string) {
+	b.action.loading = true
+	b.action.active = false
+	b.action.label = label
+	b.action.outputAs = outputAs
+	b.action.pendingID = pendingID
+	b.action.output = ""
+}
+
+// applyActionResult reports whether the result should be installed (true) or
+// dropped because of a pendingID mismatch (false — the user reset between
+// dispatch and result, or fired a different action since).
+func (b *baseComponent) applyActionResult(pendingID, out string) bool {
+	if pendingID != b.action.pendingID || b.action.pendingID == "" {
+		return false
+	}
+	b.action.loading = false
+	b.action.active = true
+	b.action.output = out
+	return true
+}
+
+func (b *baseComponent) resetAction() {
+	b.action = actionState{}
+}
+
+// renderActionOverlay renders a component's pane while it is loading or
+// showing sticky replace_pane output. Concrete View()s branch into this
+// helper before doing their normal render. For output_as="inherit" plus
+// active state the caller must skip the overlay (the inherit path pushes
+// the action output through SetContent so the normal View renders it).
+func renderActionOverlay(b baseComponent, w, h int, focused bool) string {
+	style, focusedStyle, border := GetBorderStyle(b.styles.Border)
+	borderStyle := style
+	if focused {
+		borderStyle = focusedStyle
+	}
+	innerWidth, innerHeight := CalcWidthHeight(w, h)
+	header := b.renderHeader(border)
+	headerHeight := lipgloss.Height(header)
+	contentHeight := max(0, innerHeight-headerHeight)
+
+	var content string
+	switch {
+	case b.action.loading:
+		msg := "Running: " + b.action.label
+		if msg == "Running: " {
+			msg = "Running…"
+		}
+		if innerWidth < 10 || contentHeight < 3 {
+			msg = "[…]"
+		}
+		content = lipgloss.Place(innerWidth, contentHeight, lipgloss.Center, lipgloss.Center, msg)
+	case b.action.active:
+		wrapped := WrapContent(b.action.output, innerWidth)
+		lines := strings.Split(wrapped, "\n")
+		if len(lines) > contentHeight {
+			lines = lines[:contentHeight]
+		}
+		content = lipgloss.NewStyle().Width(innerWidth).Height(contentHeight).Render(strings.Join(lines, "\n"))
+	}
+
+	full := lipgloss.JoinVertical(lipgloss.Left, header, content)
+	return borderStyle.Width(innerWidth).Height(innerHeight).Render(full)
+}
+
+// inActionOverlayState reports whether the component should render via the
+// action overlay (loading or sticky non-inherit) instead of its normal View.
+func (b baseComponent) inActionOverlayState() bool {
+	if b.action.loading {
+		return true
+	}
+	if b.action.active && b.action.outputAs != "inherit" {
+		return true
+	}
+	return false
+}
+
 func (b baseComponent) SupportsRefresh() bool {
 	return b.config.Data != nil && b.config.Data.RefreshInterval > 0
 }
@@ -166,6 +253,13 @@ func (c *errorComponent) SetContent(result data.FetchOutput) (Component, tea.Cmd
 func (c *errorComponent) HandleAddMode(msg tea.KeyMsg) (Component, bool, tea.Cmd) {
 	return c, true, nil
 }
+func (c *errorComponent) BeginAction(label, outputAs, pendingID string) (Component, tea.Cmd) {
+	return c, nil
+}
+func (c *errorComponent) ApplyActionResult(pendingID, out, outputAs string) (Component, tea.Cmd) {
+	return c, nil
+}
+func (c *errorComponent) ResetAction() (Component, tea.Cmd) { return c, nil }
 
 func (c *errorComponent) View(width, height int, focused bool) string {
 	style, _, border := GetBorderStyle(c.styles.Border)
