@@ -40,7 +40,7 @@ func (c *TextComponent) View(w, h int, focused bool) string {
 
 	innerWidth, innerHeight := CalcWidthHeight(w, h)
 
-	header := c.renderHeader(border)
+	header := c.renderHeader(border, focused)
 	headerHeight := lipgloss.Height(header)
 
 	c.viewport.Width = innerWidth

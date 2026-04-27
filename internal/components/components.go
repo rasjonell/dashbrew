@@ -219,7 +219,7 @@ func renderActionOverlay(b *baseComponent, w, h int, focused bool) string {
 		borderStyle = focusedStyle
 	}
 	innerWidth, innerHeight := CalcWidthHeight(w, h)
-	header := b.renderHeader(border)
+	header := b.renderHeader(border, focused)
 	headerHeight := lipgloss.Height(header)
 
 	var content, footer string
@@ -293,13 +293,23 @@ func (b baseComponent) SupportsRefresh() bool {
 	return b.config.Data != nil && b.config.Data.RefreshInterval > 0
 }
 
-func (b baseComponent) renderHeader(border lipgloss.Border) string {
-	style := lipgloss.NewStyle().Border(border, false, true, true, false).Padding(0, 1)
+func (b baseComponent) renderHeader(border lipgloss.Border, focused bool) string {
 	title := b.config.Title
 	if title == "" {
 		title = "Untitled"
 	}
-	return style.Render(title)
+
+	titleStyle := lipgloss.NewStyle()
+	if focused {
+		title = "▸ " + title
+		titleStyle = titleStyle.Bold(true)
+		if b.styles != nil && b.styles.Border != nil {
+			titleStyle = titleStyle.Foreground(GetColor(b.styles.Border.FocusedColor, lipgloss.Color("default")))
+		}
+	}
+
+	style := lipgloss.NewStyle().Border(border, false, true, true, false).Padding(0, 1)
+	return style.Render(titleStyle.Render(title))
 }
 
 func (b baseComponent) renderFooter(w int, percent float64, caption string) string {
@@ -348,7 +358,7 @@ func (c *errorComponent) View(width, height int, focused bool) string {
 
 	innerWidth, innerHeight := CalcWidthHeight(width, height)
 
-	header := c.renderHeader(border)
+	header := c.renderHeader(border, focused)
 	headerHeight := lipgloss.Height(header)
 
 	errorContent := lipgloss.Place(

@@ -49,7 +49,7 @@ func (c *TableComponent) View(w, h int, focused bool) string {
 
 	innerWidth, innerHeight := CalcWidthHeight(w, h)
 
-	header := c.renderHeader(border)
+	header := c.renderHeader(border, focused)
 	headerHeight := lipgloss.Height(header)
 
 	// TODO: add a separate Resize() trigger for components

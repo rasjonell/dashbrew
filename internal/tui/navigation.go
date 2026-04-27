@@ -23,10 +23,11 @@ type boundingBox struct {
 }
 
 func (m *model) handleResize(msgWidth, msgHeight int) {
-	// Reserve one row at the bottom of the terminal for the help line; the
+	// Reserve two rows at the bottom of the terminal: one for the thin
+	// separator rule above the help line, one for the help text itself. The
 	// dashboard layout (and bounding-box calculations used for click-to-focus
 	// and arrow nav) work entirely within m.height.
-	w, h := evenWidthHeight(msgWidth, msgHeight-1)
+	w, h := evenWidthHeight(msgWidth, msgHeight-2)
 	if w == m.width && h == m.height && m.ready {
 		return
 	}
