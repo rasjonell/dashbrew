@@ -44,6 +44,10 @@ type Component interface {
 	SupportsRefresh() bool
 	Config() *config.Component
 
+	Bindings() []config.Binding
+	ActionActive() bool
+	ActionLoading() bool
+
 	Init() tea.Cmd
 	View(w, h int, focused bool) string
 	Update(msg tea.Msg) (Component, tea.Cmd)
@@ -77,11 +81,26 @@ func NewComponent(cfg *config.Component, styles *config.StyleConfig) Component {
 	}
 }
 
+// actionState captures whether a component is currently displaying the result
+// of a replace_pane action instead of its normal data, or is in the middle of
+// running one. The zero value means inactive/not-loading. Sticky behaviour:
+// once `active` is true, the component keeps showing the action output until
+// ResetAction is called (R / Esc when focused).
+type actionState struct {
+	active        bool
+	loading       bool
+	output        string
+	label         string
+	outputAs      string
+	pendingID     string // mints per-action so late-arriving results can be discarded after a reset
+}
+
 type baseComponent struct {
 	err    error
 	id     string
 	config *config.Component
 	styles *config.StyleConfig
+	action actionState
 }
 
 func (b baseComponent) Init() tea.Cmd             { return nil }
@@ -91,6 +110,15 @@ func (b baseComponent) IsFocusable() bool         { return true }
 func (b baseComponent) SupportsAdd() bool         { return false }
 func (b baseComponent) Config() *config.Component { return b.config }
 func (b baseComponent) Type() string              { return b.config.Type }
+func (b baseComponent) ActionActive() bool        { return b.action.active }
+func (b baseComponent) ActionLoading() bool       { return b.action.loading }
+
+func (b baseComponent) Bindings() []config.Binding {
+	if b.config == nil {
+		return nil
+	}
+	return b.config.Bindings
+}
 
 func (b baseComponent) SupportsRefresh() bool {
 	return b.config.Data != nil && b.config.Data.RefreshInterval > 0
