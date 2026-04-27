@@ -4,6 +4,7 @@ import (
 	"github.com/charmbracelet/bubbles/key"
 	"github.com/charmbracelet/bubbles/spinner"
 	"github.com/charmbracelet/bubbletea"
+	"github.com/charmbracelet/lipgloss"
 	"github.com/rasjonell/dashbrew/internal/components"
 	"github.com/rasjonell/dashbrew/internal/config"
 	"github.com/rasjonell/dashbrew/internal/data"
@@ -139,7 +140,7 @@ func (m *model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	if !m.initialized || m.focusedComponentId == "" {
 		if msg, ok := msg.(tea.WindowSizeMsg); ok {
-			m.handleResize(msg.Width, msg.Width)
+			m.handleResize(msg.Width, msg.Height)
 		} else {
 			return m, nil
 		}
@@ -358,17 +359,19 @@ func (m *model) View() string {
 		return "Resizing..."
 	}
 
-	if m.errorModal != nil {
-		return m.renderErrorModal()
+	var dashboard string
+	switch {
+	case m.errorModal != nil:
+		dashboard = m.renderErrorModal()
+	case m.palette.open:
+		dashboard = m.renderPalette()
+	default:
+		dashboard = m.renderNode(
+			m.cfg.Layout,
+			m.width, m.height,
+			m.focusedComponentId,
+		)
 	}
 
-	if m.palette.open {
-		return m.renderPalette()
-	}
-
-	return m.renderNode(
-		m.cfg.Layout,
-		m.width, m.height,
-		m.focusedComponentId,
-	)
+	return lipgloss.JoinVertical(lipgloss.Left, dashboard, m.renderHelpLine())
 }
