@@ -41,7 +41,7 @@
                   "label": "Open dashboard.json in editor",
                   "action": {
                     "type": "fire_and_forget",
-                    "command": "${EDITOR:-vi} ./dashboard.json &"
+                    "command": "open ./dashboard.json"
                   }
                 }
               ]

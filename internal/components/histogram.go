@@ -177,9 +177,6 @@ func (c *HistogramComponent) SetContent(result data.FetchOutput) (Component, tea
 }
 
 func (c *HistogramComponent) renderHistogram(w int, withFooter bool) string {
-	baseColor := GetColor(c.styles.Border.FocusedColor, "#484848")
-	barColor := BrightenColor(baseColor, 30)
-	barStyle := lipgloss.NewStyle().Foreground(barColor)
 	lineStyle := lipgloss.NewStyle().MarginBottom(1)
 	captionStyle := lipgloss.NewStyle().Width(w).AlignHorizontal(lipgloss.Center).Bold(true).MarginTop(1)
 
@@ -191,7 +188,7 @@ func (c *HistogramComponent) renderHistogram(w int, withFooter bool) string {
 	}
 
 	lines := make([]string, 0, len(c.labels))
-	for _, key := range c.labels {
+	for i, key := range c.labels {
 		count := c.bins[key]
 		label := key
 		if len(label) > maxLabelLength {
@@ -204,6 +201,8 @@ func (c *HistogramComponent) renderHistogram(w int, withFooter bool) string {
 		barLength := max(1, int(float64(count)/float64(c.maxValue)*float64(maxBarLength)))
 
 		bar := strings.Repeat("█", barLength)
+		barColor := c.barColor(key, count, i)
+		barStyle := lipgloss.NewStyle().Foreground(barColor)
 
 		paddedLabel := fmt.Sprintf("%-*s", maxLabelLength, label)
 		line := lineStyle.Render(fmt.Sprintf("%s [%s] | %s", paddedLabel, countText, barStyle.Render(bar)))
@@ -215,6 +214,45 @@ func (c *HistogramComponent) renderHistogram(w int, withFooter bool) string {
 	}
 
 	return strings.Join(lines, "\n")
+}
+
+// barColor picks a bar's foreground color based on the configured barStyle.
+// Defaults to the theme accent. Modes:
+//   - "single" (default) — every bar uses theme.accent
+//   - "alternate"        — alternates accent / dim
+//   - "gradient"         — interpolates dim -> accent based on value/maxValue
+//   - "map"              — uses style.barColors[key], falls back to accent
+func (c *HistogramComponent) barColor(key string, count, idx int) lipgloss.Color {
+	accent := PaletteColor(c.styles, "accent", lipgloss.Color("#bd93f9"))
+	dim := PaletteColor(c.styles, "dim", lipgloss.Color("#808080"))
+
+	mode := ""
+	var perBin map[string]string
+	if cs := c.config.Style; cs != nil {
+		mode = cs.BarStyle
+		perBin = cs.BarColors
+	}
+
+	switch mode {
+	case "alternate":
+		if idx%2 == 1 {
+			return dim
+		}
+		return accent
+	case "gradient":
+		if c.maxValue <= 0 {
+			return accent
+		}
+		t := float64(count) / float64(c.maxValue)
+		return blendHexColors(string(dim), string(accent), t, accent)
+	case "map":
+		if hex, ok := perBin[key]; ok {
+			return GetColor(hex, accent)
+		}
+		return accent
+	default: // "" or "single"
+		return accent
+	}
 }
 
 func (c *HistogramComponent) parseDataToHistogram(rawData string) (map[string]int, error) {

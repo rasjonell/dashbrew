@@ -20,11 +20,21 @@ type LayoutNode struct {
 }
 
 type Component struct {
-	Type     string      `json:"type"`
-	Title    string      `json:"title"`
-	Data     *DataConfig `json:"data"`
-	ID       string      `json:"id,omitempty"`
-	Bindings []Binding   `json:"bindings,omitempty"`
+	Type     string                `json:"type"`
+	Title    string                `json:"title"`
+	Data     *DataConfig           `json:"data"`
+	ID       string                `json:"id,omitempty"`
+	Bindings []Binding             `json:"bindings,omitempty"`
+	Style    *ComponentStyleConfig `json:"style,omitempty"`
+}
+
+// ComponentStyleConfig carries per-component visual overrides on top of the
+// dashboard-wide theme. Fields are populated incrementally as features land
+// (histogram bar coloring first; chart/table/todo extras follow).
+type ComponentStyleConfig struct {
+	// Histogram
+	BarStyle  string            `json:"barStyle,omitempty"`  // "single" | "alternate" | "gradient" | "map"
+	BarColors map[string]string `json:"barColors,omitempty"` // per-bin overrides for "map" style
 }
 
 type Binding struct {

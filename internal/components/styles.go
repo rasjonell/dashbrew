@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/charmbracelet/lipgloss"
+	colorful "github.com/lucasb-eyer/go-colorful"
 	"github.com/rasjonell/dashbrew/internal/config"
 )
 
@@ -53,6 +54,55 @@ func GetColor(configColor string, defaultColor lipgloss.Color) lipgloss.Color {
 		return lipgloss.Color(configColor)
 	}
 	return defaultColor
+}
+
+// blendHexColors linearly interpolates between two color strings (hex or
+// any lipgloss.Color value) by `t` in [0, 1] using LAB blending for visually
+// uniform gradients. Returns `fallback` if either color fails to parse.
+func blendHexColors(a, b string, t float64, fallback lipgloss.Color) lipgloss.Color {
+	if t < 0 {
+		t = 0
+	}
+	if t > 1 {
+		t = 1
+	}
+	ca, errA := colorful.Hex(a)
+	cb, errB := colorful.Hex(b)
+	if errA != nil || errB != nil {
+		return fallback
+	}
+	mixed := ca.BlendLab(cb, t)
+	return lipgloss.Color(mixed.Hex())
+}
+
+// PaletteColor returns the lipgloss.Color for a named role, falling back to
+// `fallback` when the role is unset or the active style has no palette.
+func PaletteColor(styles *config.StyleConfig, role string, fallback lipgloss.Color) lipgloss.Color {
+	if styles == nil || styles.Palette == nil {
+		return fallback
+	}
+	hex := ""
+	switch role {
+	case "background":
+		hex = styles.Palette.Background
+	case "foreground":
+		hex = styles.Palette.Foreground
+	case "dim":
+		hex = styles.Palette.Dim
+	case "accent":
+		hex = styles.Palette.Accent
+	case "success":
+		hex = styles.Palette.Success
+	case "warning":
+		hex = styles.Palette.Warning
+	case "error":
+		hex = styles.Palette.Error
+	case "border":
+		hex = styles.Palette.Border
+	case "borderFocused":
+		hex = styles.Palette.BorderFocused
+	}
+	return GetColor(hex, fallback)
 }
 
 func WrapContent(content string, width int) string {
