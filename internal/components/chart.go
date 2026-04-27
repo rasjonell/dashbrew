@@ -62,9 +62,15 @@ func (c *ChartComponent) View(w, h int, focused bool) string {
 				"[Area Too Small]",
 			)
 		} else {
+			accent := PaletteHex(c.styles, "accent", "#bd93f9")
+			dim := PaletteHex(c.styles, "dim", "#808080")
 			opts := []asciigraph.Option{
 				asciigraph.Width(chartWidth),
 				asciigraph.Height(chartHeight),
+				asciigraph.SeriesColors(asciigraph.AnsiColor(HexToAnsi256(accent, 0))),
+				asciigraph.AxisColor(asciigraph.AnsiColor(HexToAnsi256(dim, 0))),
+				asciigraph.LabelColor(asciigraph.AnsiColor(HexToAnsi256(dim, 0))),
+				asciigraph.CaptionColor(asciigraph.AnsiColor(HexToAnsi256(dim, 0))),
 			}
 			if c.config.Data != nil && c.config.Data.Caption != "" {
 				opts = append(opts, asciigraph.Caption(c.config.Data.Caption))

@@ -56,6 +56,38 @@ func GetColor(configColor string, defaultColor lipgloss.Color) lipgloss.Color {
 	return defaultColor
 }
 
+// HexToAnsi256 maps a hex color string to the closest ANSI-256 palette index
+// (0-255), suitable for libraries like asciigraph that don't accept truecolor.
+// Returns the supplied fallback when parsing fails.
+func HexToAnsi256(hex string, fallback byte) byte {
+	c, err := colorful.Hex(hex)
+	if err != nil {
+		return fallback
+	}
+	r := int(c.R*5 + 0.5)
+	g := int(c.G*5 + 0.5)
+	b := int(c.B*5 + 0.5)
+	if r < 0 {
+		r = 0
+	}
+	if g < 0 {
+		g = 0
+	}
+	if b < 0 {
+		b = 0
+	}
+	if r > 5 {
+		r = 5
+	}
+	if g > 5 {
+		g = 5
+	}
+	if b > 5 {
+		b = 5
+	}
+	return byte(16 + 36*r + 6*g + b)
+}
+
 // blendHexColors linearly interpolates between two color strings (hex or
 // any lipgloss.Color value) by `t` in [0, 1] using LAB blending for visually
 // uniform gradients. Returns `fallback` if either color fails to parse.
@@ -78,6 +110,12 @@ func blendHexColors(a, b string, t float64, fallback lipgloss.Color) lipgloss.Co
 // PaletteColor returns the lipgloss.Color for a named role, falling back to
 // `fallback` when the role is unset or the active style has no palette.
 func PaletteColor(styles *config.StyleConfig, role string, fallback lipgloss.Color) lipgloss.Color {
+	hex := PaletteHex(styles, role, "")
+	return GetColor(hex, fallback)
+}
+
+// PaletteHex returns the raw hex string for a named role, or fallback if unset.
+func PaletteHex(styles *config.StyleConfig, role, fallback string) string {
 	if styles == nil || styles.Palette == nil {
 		return fallback
 	}
@@ -102,7 +140,10 @@ func PaletteColor(styles *config.StyleConfig, role string, fallback lipgloss.Col
 	case "borderFocused":
 		hex = styles.Palette.BorderFocused
 	}
-	return GetColor(hex, fallback)
+	if hex == "" {
+		return fallback
+	}
+	return hex
 }
 
 func WrapContent(content string, width int) string {
