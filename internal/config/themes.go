@@ -6,6 +6,8 @@ import (
 	"fmt"
 	"sort"
 	"strings"
+
+	"github.com/muesli/termenv"
 )
 
 //go:embed themes/*.json
@@ -84,6 +86,16 @@ func OverrideTheme(cfg *DashboardConfig, name string) error {
 	return cfg.resolvePalette()
 }
 
+// autoThemeForTerminal probes the terminal background via OSC 11 (handled
+// by termenv) and returns a theme name appropriate for that background.
+// Falls back to the dark default if detection fails.
+func autoThemeForTerminal() string {
+	if termenv.HasDarkBackground() {
+		return "default"
+	}
+	return "solarized-light"
+}
+
 // AvailableThemes returns the sorted list of currently-registered theme names.
 func AvailableThemes() []string {
 	names := make([]string, 0, len(themeRegistry))
@@ -116,8 +128,11 @@ func (cfg *DashboardConfig) resolvePalette() error {
 		mergePaletteInto(resolved, def.Palette)
 	}
 
-	// 2. named theme
+	// 2. named theme (or "auto" → detect terminal background)
 	if name := strings.TrimSpace(cfg.Style.Theme); name != "" {
+		if name == "auto" {
+			name = autoThemeForTerminal()
+		}
 		t, ok := LookupTheme(name)
 		if !ok {
 			return fmt.Errorf("style.theme %q: unknown theme (available: %s)",
