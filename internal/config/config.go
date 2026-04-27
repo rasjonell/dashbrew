@@ -156,6 +156,8 @@ type BorderStyleConfig struct {
 }
 
 func LoadConfig(path string) (*DashboardConfig, error) {
+	loadCustomThemesOnce()
+
 	file, err := os.ReadFile(path)
 	if err != nil {
 		return nil, err

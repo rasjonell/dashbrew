@@ -4,8 +4,11 @@ import (
 	"embed"
 	"encoding/json"
 	"fmt"
+	"os"
+	"path/filepath"
 	"sort"
 	"strings"
+	"sync"
 
 	"github.com/muesli/termenv"
 )
@@ -56,6 +59,55 @@ func RegisterTheme(t Theme) {
 	themeRegistry[t.Name] = t
 }
 
+var customThemesOnce sync.Once
+
+// loadCustomThemesOnce scans the user-level theme directories for *.json files
+// and registers them. Custom themes override embedded ones with the same name.
+// Looks at, in order:
+//
+//	$DASHBREW_THEMES_DIR
+//	$XDG_CONFIG_HOME/dashbrew/themes (or ~/.config/dashbrew/themes)
+func loadCustomThemesOnce() {
+	customThemesOnce.Do(func() {
+		for _, dir := range customThemeDirs() {
+			entries, err := os.ReadDir(dir)
+			if err != nil {
+				continue
+			}
+			for _, e := range entries {
+				if e.IsDir() || !strings.HasSuffix(e.Name(), ".json") {
+					continue
+				}
+				data, err := os.ReadFile(filepath.Join(dir, e.Name()))
+				if err != nil {
+					continue
+				}
+				var t Theme
+				if err := json.Unmarshal(data, &t); err != nil {
+					continue
+				}
+				if t.Name == "" {
+					t.Name = strings.TrimSuffix(e.Name(), ".json")
+				}
+				RegisterTheme(t)
+			}
+		}
+	})
+}
+
+func customThemeDirs() []string {
+	var dirs []string
+	if x := strings.TrimSpace(os.Getenv("DASHBREW_THEMES_DIR")); x != "" {
+		dirs = append(dirs, x)
+	}
+	if x := strings.TrimSpace(os.Getenv("XDG_CONFIG_HOME")); x != "" {
+		dirs = append(dirs, filepath.Join(x, "dashbrew", "themes"))
+	} else if home, err := os.UserHomeDir(); err == nil {
+		dirs = append(dirs, filepath.Join(home, ".config", "dashbrew", "themes"))
+	}
+	return dirs
+}
+
 // LookupTheme returns a copy of the named theme along with whether it exists.
 func LookupTheme(name string) (Theme, bool) {
 	t, ok := themeRegistry[name]
@@ -97,7 +149,9 @@ func autoThemeForTerminal() string {
 }
 
 // AvailableThemes returns the sorted list of currently-registered theme names.
+// Loads custom themes (~/.config/dashbrew/themes) on first call.
 func AvailableThemes() []string {
+	loadCustomThemesOnce()
 	names := make([]string, 0, len(themeRegistry))
 	for n := range themeRegistry {
 		names = append(names, n)
