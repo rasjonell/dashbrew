@@ -219,7 +219,7 @@ func renderActionOverlay(b *baseComponent, w, h int, focused bool) string {
 		borderStyle = focusedStyle
 	}
 	innerWidth, innerHeight := CalcWidthHeight(w, h)
-	header := b.renderHeader(border, focused)
+	header := b.renderHeader(border, focused, innerWidth)
 	headerHeight := lipgloss.Height(header)
 
 	var content, footer string
@@ -293,10 +293,13 @@ func (b baseComponent) SupportsRefresh() bool {
 	return b.config.Data != nil && b.config.Data.RefreshInterval > 0
 }
 
-func (b baseComponent) renderHeader(border lipgloss.Border, focused bool) string {
+func (b baseComponent) renderHeader(border lipgloss.Border, focused bool, innerWidth int) string {
 	title := b.config.Title
 	if title == "" {
 		title = "Untitled"
+	}
+	if b.config.Icon != "" {
+		title = b.config.Icon + " " + title
 	}
 
 	titleStyle := lipgloss.NewStyle()
@@ -311,7 +314,24 @@ func (b baseComponent) renderHeader(border lipgloss.Border, focused bool) string
 		}
 	}
 
-	return style.Render(titleStyle.Render(title))
+	cell := style.Render(titleStyle.Render(title))
+
+	align := b.config.TitleAlign
+	if align == "" || innerWidth <= 0 {
+		return cell
+	}
+	cellWidth := lipgloss.Width(cell)
+	if cellWidth >= innerWidth {
+		return cell
+	}
+	switch align {
+	case "center":
+		return lipgloss.PlaceHorizontal(innerWidth, lipgloss.Center, cell)
+	case "right":
+		return lipgloss.PlaceHorizontal(innerWidth, lipgloss.Right, cell)
+	default: // "left"
+		return cell
+	}
 }
 
 func (b baseComponent) renderFooter(w int, percent float64, caption string) string {
@@ -360,7 +380,7 @@ func (c *errorComponent) View(width, height int, focused bool) string {
 
 	innerWidth, innerHeight := CalcWidthHeight(width, height)
 
-	header := c.renderHeader(border, focused)
+	header := c.renderHeader(border, focused, innerWidth)
 	headerHeight := lipgloss.Height(header)
 
 	errorContent := lipgloss.Place(

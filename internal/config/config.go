@@ -20,12 +20,14 @@ type LayoutNode struct {
 }
 
 type Component struct {
-	Type     string                `json:"type"`
-	Title    string                `json:"title"`
-	Data     *DataConfig           `json:"data"`
-	ID       string                `json:"id,omitempty"`
-	Bindings []Binding             `json:"bindings,omitempty"`
-	Style    *ComponentStyleConfig `json:"style,omitempty"`
+	Type       string                `json:"type"`
+	Title      string                `json:"title"`
+	TitleAlign string                `json:"titleAlign,omitempty"` // "left" (default) | "center" | "right"
+	Icon       string                `json:"icon,omitempty"`       // literal glyph prepended to title
+	Data       *DataConfig           `json:"data"`
+	ID         string                `json:"id,omitempty"`
+	Bindings   []Binding             `json:"bindings,omitempty"`
+	Style      *ComponentStyleConfig `json:"style,omitempty"`
 }
 
 // ComponentStyleConfig carries per-component visual overrides on top of the

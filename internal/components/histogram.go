@@ -51,7 +51,7 @@ func (c *HistogramComponent) View(w, h int, focused bool) string {
 
 	innerWidth, innerHeight := CalcWidthHeight(w, h)
 
-	header := c.renderHeader(border, focused)
+	header := c.renderHeader(border, focused, innerWidth)
 	headerHeight := lipgloss.Height(header)
 
 	// Decide whether the footer (caption + scroll %) is needed based on this

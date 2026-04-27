@@ -37,7 +37,7 @@ func (c *ChartComponent) View(w, h int, focused bool) string {
 
 	innerWidth, innerHeight := CalcWidthHeight(w, h)
 
-	header := c.renderHeader(border, focused)
+	header := c.renderHeader(border, focused, innerWidth)
 	headerHeight := lipgloss.Height(header)
 
 	chartHeight := max(0, innerHeight-headerHeight-2)
