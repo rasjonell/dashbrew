@@ -123,10 +123,11 @@ type ColumnConfig struct {
 }
 
 type StyleConfig struct {
-	Theme   string             `json:"theme,omitempty"`
-	Palette *PaletteConfig     `json:"palette,omitempty"`
-	Global  *GlobalStyleConfig `json:"global,omitempty"`
-	Border  *BorderStyleConfig `json:"border,omitempty"`
+	Theme     string             `json:"theme,omitempty"`
+	Palette   *PaletteConfig     `json:"palette,omitempty"`
+	Global    *GlobalStyleConfig `json:"global,omitempty"`
+	Border    *BorderStyleConfig `json:"border,omitempty"`
+	FocusMode string             `json:"focusMode,omitempty"` // "" (default) | "highlight" → dim non-focused panes
 }
 
 // PaletteConfig is the role-based color palette. Each field is a hex string

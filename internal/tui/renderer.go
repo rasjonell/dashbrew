@@ -65,7 +65,11 @@ func (m *model) renderNode(
 
 		}
 
-		return comp.View(width, height, isFocused)
+		view := comp.View(width, height, isFocused)
+		if !isFocused && m.cfg.Style != nil && m.cfg.Style.FocusMode == "highlight" {
+			view = lipgloss.NewStyle().Faint(true).Render(view)
+		}
+		return view
 
 	case "container":
 		if len(node.Children) == 0 {
