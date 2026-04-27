@@ -74,74 +74,78 @@ func (m *model) dispatchAction(componentID, label string, a config.ActionConfig)
 
 // runActionCmd builds the tea.Cmd that executes an action asynchronously.
 // fire_and_forget returns nil immediately; the process is reaped silently in
-// a goroutine. replace_pane captures stdout/stderr and emits actionResultMsg
-// or actionFailedMsg.
+// a goroutine that owns its own context cancel so the spawned process isn't
+// killed when the closure returns. replace_pane captures stdout/stderr and
+// emits actionResultMsg or actionFailedMsg.
 func runActionCmd(componentID, pendingID, label string, a config.ActionConfig) tea.Cmd {
 	return func() tea.Msg {
-		ctx := context.Background()
-		var cancel context.CancelFunc
-		switch {
-		case a.TimeoutSeconds > 0:
-			ctx, cancel = context.WithTimeout(ctx, time.Duration(a.TimeoutSeconds)*time.Second)
-			defer cancel()
-		case a.TimeoutSeconds == 0 && a.Type == "fire_and_forget":
-			// fire_and_forget gets the standard guard so a runaway script doesn't leak.
-			ctx, cancel = context.WithTimeout(ctx, defaultActionTimeout)
-			defer cancel()
-		case a.TimeoutSeconds == 0 && a.Type == "replace_pane":
-			ctx, cancel = context.WithTimeout(ctx, defaultActionTimeout)
-			defer cancel()
+		timeout := time.Duration(a.TimeoutSeconds) * time.Second
+		if a.TimeoutSeconds <= 0 {
+			timeout = defaultActionTimeout
 		}
-		// TimeoutSeconds < 0 is rejected at validation; explicit 0 with a "no-timeout"
-		// opt-in is reserved for v3 once we support streaming.
-
-		cmd := exec.CommandContext(ctx, "sh", "-c", a.Command)
 
 		if a.Type == "fire_and_forget" {
-			cmd.Stdout = io.Discard
-			cmd.Stderr = io.Discard
-			if err := cmd.Start(); err != nil {
-				return actionFailedMsg{
-					ComponentID: componentID, PendingID: pendingID,
-					Command: a.Command, ExitCode: -1, Err: err, Label: label,
-				}
-			}
-			go func() {
-				_ = cmd.Wait()
-				if cancel != nil {
-					cancel()
-				}
-			}()
-			return nil
+			return runFireAndForget(componentID, pendingID, label, a, timeout)
 		}
+		return runReplacePane(componentID, pendingID, label, a, timeout)
+	}
+}
 
-		var stdout, stderr bytes.Buffer
-		cmd.Stdout = &stdout
-		cmd.Stderr = &stderr
-		err := cmd.Run()
+func runFireAndForget(componentID, pendingID, label string, a config.ActionConfig, timeout time.Duration) tea.Msg {
+	ctx, cancel := context.WithTimeout(context.Background(), timeout)
+	cmd := exec.CommandContext(ctx, "sh", "-c", a.Command)
+	cmd.Stdout = io.Discard
+	cmd.Stderr = io.Discard
 
-		if ctx.Err() == context.DeadlineExceeded {
-			return actionFailedMsg{
-				ComponentID: componentID, PendingID: pendingID,
-				Command: a.Command, ExitCode: -1, Stderr: stderr.String(),
-				Err: ctx.Err(), Label: label,
-			}
-		}
-		if err != nil {
-			exitCode := -1
-			if exitErr, ok := err.(*exec.ExitError); ok {
-				exitCode = exitErr.ExitCode()
-			}
-			return actionFailedMsg{
-				ComponentID: componentID, PendingID: pendingID,
-				Command: a.Command, ExitCode: exitCode, Stderr: stderr.String(),
-				Err: err, Label: label,
-			}
-		}
-
-		return actionResultMsg{
+	if err := cmd.Start(); err != nil {
+		cancel()
+		return actionFailedMsg{
 			ComponentID: componentID, PendingID: pendingID,
-			Stdout: stdout.String(), OutputAs: a.OutputAs, Label: label,
+			Command: a.Command, ExitCode: -1, Err: err, Label: label,
 		}
+	}
+
+	// Goroutine owns the cancel so the spawned process survives until it
+	// either exits on its own or hits the timeout. Returning nil to bubbletea
+	// here MUST NOT kill the process.
+	go func() {
+		defer cancel()
+		_ = cmd.Wait()
+	}()
+	return nil
+}
+
+func runReplacePane(componentID, pendingID, label string, a config.ActionConfig, timeout time.Duration) tea.Msg {
+	ctx, cancel := context.WithTimeout(context.Background(), timeout)
+	defer cancel()
+
+	cmd := exec.CommandContext(ctx, "sh", "-c", a.Command)
+	var stdout, stderr bytes.Buffer
+	cmd.Stdout = &stdout
+	cmd.Stderr = &stderr
+	err := cmd.Run()
+
+	if ctx.Err() == context.DeadlineExceeded {
+		return actionFailedMsg{
+			ComponentID: componentID, PendingID: pendingID,
+			Command: a.Command, ExitCode: -1, Stderr: stderr.String(),
+			Err: ctx.Err(), Label: label,
+		}
+	}
+	if err != nil {
+		exitCode := -1
+		if exitErr, ok := err.(*exec.ExitError); ok {
+			exitCode = exitErr.ExitCode()
+		}
+		return actionFailedMsg{
+			ComponentID: componentID, PendingID: pendingID,
+			Command: a.Command, ExitCode: exitCode, Stderr: stderr.String(),
+			Err: err, Label: label,
+		}
+	}
+
+	return actionResultMsg{
+		ComponentID: componentID, PendingID: pendingID,
+		Stdout: stdout.String(), OutputAs: a.OutputAs, Label: label,
 	}
 }
