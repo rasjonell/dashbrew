@@ -64,6 +64,20 @@ func EffectiveStyles(global *StyleConfig, comp *Component) *StyleConfig {
 			eff.Palette = &PaletteConfig{}
 		}
 		mergePaletteInto(eff.Palette, comp.Style.Palette)
+		// Mirror border-related palette overrides into the legacy Border
+		// block so GetBorderStyle / renderHeader see them at this scope.
+		if comp.Style.Palette.Border != "" {
+			if eff.Border == nil {
+				eff.Border = &BorderStyleConfig{}
+			}
+			eff.Border.Color = comp.Style.Palette.Border
+		}
+		if comp.Style.Palette.BorderFocused != "" {
+			if eff.Border == nil {
+				eff.Border = &BorderStyleConfig{}
+			}
+			eff.Border.FocusedColor = comp.Style.Palette.BorderFocused
+		}
 	}
 	if comp.Style.BorderType != "" {
 		if eff.Border == nil {

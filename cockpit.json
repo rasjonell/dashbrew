@@ -1,0 +1,245 @@
+{
+  "style": {
+    "theme": "dracula",
+    "layout": { "gap": 1 },
+    "focusMode": "highlight"
+  },
+  "layout": {
+    "type": "container",
+    "direction": "column",
+    "children": [
+      {
+        "type": "container",
+        "direction": "row",
+        "flex": 1,
+        "children": [
+          {
+            "type": "component",
+            "flex": 1,
+            "component": {
+              "id": "system",
+              "type": "text",
+              "title": "System",
+              "icon": "⚡",
+              "data": {
+                "source": "script",
+                "command": "uptime",
+                "refresh_interval": 5
+              },
+              "bindings": [
+                {
+                  "key": "i",
+                  "label": "Show full system info",
+                  "action": {
+                    "type": "replace_pane",
+                    "command": "uname -a; echo; uptime; echo; (vm_stat 2>/dev/null || free -h)",
+                    "output_as": "text"
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "type": "component",
+            "flex": 1,
+            "component": {
+              "id": "weather",
+              "type": "text",
+              "title": "Weather",
+              "icon": "☁",
+              "titleAlign": "center",
+              "data": {
+                "source": "api",
+                "url": "https://wttr.in/?format=4",
+                "refresh_interval": 600
+              }
+            }
+          },
+          {
+            "type": "component",
+            "flex": 1,
+            "component": {
+              "id": "advice",
+              "type": "text",
+              "title": "Advice",
+              "icon": "💡",
+              "titleAlign": "right",
+              "data": {
+                "source": "api",
+                "url": "https://api.adviceslip.com/advice",
+                "json_path": "$.slip.advice",
+                "refresh_interval": 30
+              }
+            }
+          }
+        ]
+      },
+      {
+        "type": "container",
+        "direction": "row",
+        "flex": 4,
+        "children": [
+          {
+            "type": "container",
+            "direction": "column",
+            "flex": 2,
+            "children": [
+              {
+                "type": "component",
+                "flex": 3,
+                "component": {
+                  "id": "load",
+                  "type": "chart",
+                  "title": "Load",
+                  "icon": "📈",
+                  "data": {
+                    "source": "script",
+                    "command": "./random_numbers.sh 5",
+                    "refresh_interval": 1,
+                    "refresh_mode": "append",
+                    "caption": "Synthetic load · live append"
+                  },
+                  "bindings": [
+                    {
+                      "key": "s",
+                      "label": "Snapshot 60 fresh values",
+                      "action": {
+                        "type": "replace_pane",
+                        "command": "./random_numbers.sh 60",
+                        "output_as": "inherit"
+                      }
+                    }
+                  ]
+                }
+              },
+              {
+                "type": "component",
+                "flex": 2,
+                "component": {
+                  "id": "procs",
+                  "type": "list",
+                  "title": "Top processes",
+                  "icon": "🔧",
+                  "data": {
+                    "source": "script",
+                    "command": "./list.sh",
+                    "refresh_interval": 3
+                  }
+                }
+              }
+            ]
+          },
+          {
+            "type": "container",
+            "direction": "column",
+            "flex": 2,
+            "children": [
+              {
+                "type": "component",
+                "flex": 3,
+                "component": {
+                  "id": "fruits",
+                  "type": "histogram",
+                  "title": "Fruit basket",
+                  "icon": "🍎",
+                  "data": {
+                    "source": "script",
+                    "command": "./histogram_data.sh",
+                    "refresh_interval": 30,
+                    "caption": "Distribution by count"
+                  },
+                  "style": {
+                    "barStyle": "gradient"
+                  }
+                }
+              },
+              {
+                "type": "component",
+                "flex": 2,
+                "component": {
+                  "id": "tasks",
+                  "type": "todo",
+                  "title": "Tasks",
+                  "icon": "✓",
+                  "data": {
+                    "source": "./todo.txt"
+                  }
+                }
+              }
+            ]
+          },
+          {
+            "type": "container",
+            "direction": "column",
+            "flex": 3,
+            "children": [
+              {
+                "type": "component",
+                "flex": 1,
+                "component": {
+                  "id": "alerts",
+                  "type": "text",
+                  "title": "Alerts",
+                  "icon": "🚨",
+                  "data": {
+                    "source": "script",
+                    "command": "echo 'All systems nominal.'",
+                    "refresh_interval": 30
+                  },
+                  "style": {
+                    "borderType": "rounded",
+                    "palette": {
+                      "border": "#ff5555",
+                      "borderFocused": "#ff79c6",
+                      "accent": "#ff5555"
+                    }
+                  },
+                  "bindings": [
+                    {
+                      "key": "p",
+                      "label": "Page on-call (demo)",
+                      "action": {
+                        "type": "fire_and_forget",
+                        "command": "true"
+                      }
+                    }
+                  ]
+                }
+              },
+              {
+                "type": "component",
+                "flex": 4,
+                "component": {
+                  "id": "todos-api",
+                  "type": "table",
+                  "title": "Sample tasks",
+                  "icon": "📋",
+                  "titleAlign": "center",
+                  "data": {
+                    "source": "api",
+                    "url": "https://jsonplaceholder.typicode.com/todos",
+                    "columns": [
+                      {"flex": 1, "label": "User", "field": "userId"},
+                      {"flex": 5, "label": "Title", "field": "title"},
+                      {"flex": 2, "label": "Done", "field": "completed"}
+                    ]
+                  },
+                  "bindings": [
+                    {
+                      "key": "o",
+                      "label": "Open jsonplaceholder.com",
+                      "action": {
+                        "type": "fire_and_forget",
+                        "command": "open https://jsonplaceholder.typicode.com/"
+                      }
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}
