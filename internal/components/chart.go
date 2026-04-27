@@ -26,7 +26,7 @@ func newChartComponent(base baseComponent) *ChartComponent {
 
 func (c *ChartComponent) View(w, h int, focused bool) string {
 	if c.inActionOverlayState() {
-		return renderActionOverlay(c.baseComponent, w, h, focused)
+		return renderActionOverlay(&c.baseComponent, w, h, focused)
 	}
 
 	style, focusedStyle, border := GetBorderStyle(c.styles.Border)
@@ -88,6 +88,9 @@ func (c *ChartComponent) View(w, h int, focused bool) string {
 func (c *ChartComponent) Update(msg tea.Msg) (Component, tea.Cmd) {
 	newInstance := *c
 	if cmd, handled := tickActionSpinner(&newInstance.baseComponent, msg); handled {
+		return &newInstance, cmd
+	}
+	if cmd, handled := updateActionViewport(&newInstance.baseComponent, msg); handled {
 		return &newInstance, cmd
 	}
 	return c, nil

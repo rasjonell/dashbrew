@@ -2,10 +2,10 @@ package components
 
 import (
 	"fmt"
-	"strings"
 
 	"github.com/charmbracelet/bubbles/key"
 	"github.com/charmbracelet/bubbles/spinner"
+	"github.com/charmbracelet/bubbles/viewport"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
 	"github.com/rasjonell/dashbrew/internal/config"
@@ -101,6 +101,7 @@ type actionState struct {
 	outputAs  string
 	pendingID string // mints per-action so late-arriving results can be discarded after a reset
 	spinner   spinner.Model
+	viewport  viewport.Model
 }
 
 type baseComponent struct {
@@ -154,6 +155,14 @@ func (b *baseComponent) applyActionResult(pendingID, out string) bool {
 	b.action.loading = false
 	b.action.active = true
 	b.action.output = out
+
+	// Initialise the action overlay viewport. Width/height are set during
+	// render (when we know the pane size); content gets re-wrapped each
+	// render in case the pane was resized.
+	vp := viewport.New(0, 0)
+	vp.MouseWheelEnabled = true
+	vp.SetContent(out)
+	b.action.viewport = vp
 	return true
 }
 
@@ -176,12 +185,34 @@ func tickActionSpinner(b *baseComponent, msg tea.Msg) (tea.Cmd, bool) {
 	return cmd, true
 }
 
+// updateActionViewport forwards key / mouse messages to the action overlay's
+// scrollable viewport when the component is showing sticky text output.
+// Inherit-mode action panes render through the component's normal View, so
+// scrolling there belongs to the component's own viewport, not the action
+// overlay.
+func updateActionViewport(b *baseComponent, msg tea.Msg) (tea.Cmd, bool) {
+	if !b.action.active || b.action.outputAs == "inherit" {
+		return nil, false
+	}
+	switch msg.(type) {
+	case tea.KeyMsg, tea.MouseMsg:
+		var cmd tea.Cmd
+		b.action.viewport, cmd = b.action.viewport.Update(msg)
+		return cmd, true
+	}
+	return nil, false
+}
+
 // renderActionOverlay renders a component's pane while it is loading or
 // showing sticky replace_pane output. Concrete View()s branch into this
 // helper before doing their normal render. For output_as="inherit" plus
 // active state the caller must skip the overlay (the inherit path pushes
 // the action output through SetContent so the normal View renders it).
-func renderActionOverlay(b baseComponent, w, h int, focused bool) string {
+//
+// The pointer receiver is intentional: when active, we resize the action
+// viewport to the current pane geometry and re-wrap content, mirroring how
+// TextComponent.View mutates its own viewport on each render.
+func renderActionOverlay(b *baseComponent, w, h int, focused bool) string {
 	style, focusedStyle, border := GetBorderStyle(b.styles.Border)
 	borderStyle := style
 	if focused {
@@ -190,11 +221,13 @@ func renderActionOverlay(b baseComponent, w, h int, focused bool) string {
 	innerWidth, innerHeight := CalcWidthHeight(w, h)
 	header := b.renderHeader(border)
 	headerHeight := lipgloss.Height(header)
-	contentHeight := max(0, innerHeight-headerHeight)
 
-	var content string
+	var content, footer string
+	footerHeight := 0
+
 	switch {
 	case b.action.loading:
+		contentHeight := max(0, innerHeight-headerHeight)
 		label := b.action.label
 		if label == "" {
 			label = "action"
@@ -205,17 +238,43 @@ func renderActionOverlay(b baseComponent, w, h int, focused bool) string {
 			msg = "[…]"
 		}
 		content = lipgloss.Place(innerWidth, contentHeight, lipgloss.Center, lipgloss.Center, msg)
+
 	case b.action.active:
-		wrapped := WrapContent(b.action.output, innerWidth)
-		lines := strings.Split(wrapped, "\n")
-		if len(lines) > contentHeight {
-			lines = lines[:contentHeight]
+		// reserve a footer row for scroll % + reset hint when the pane is tall
+		// enough to spare it.
+		if innerHeight-headerHeight > 3 {
+			footerHeight = 1
 		}
-		content = lipgloss.NewStyle().Width(innerWidth).Height(contentHeight).Render(strings.Join(lines, "\n"))
+		viewportHeight := max(0, innerHeight-headerHeight-footerHeight)
+		b.action.viewport.Width = innerWidth
+		b.action.viewport.Height = viewportHeight
+		b.action.viewport.SetContent(WrapContent(b.action.output, innerWidth))
+		content = b.action.viewport.View()
+		if footerHeight > 0 {
+			footer = renderActionFooter(innerWidth, b.action.viewport.ScrollPercent(), b.action.label)
+		}
 	}
 
-	full := lipgloss.JoinVertical(lipgloss.Left, header, content)
+	parts := []string{header, content}
+	if footer != "" {
+		parts = append(parts, footer)
+	}
+	full := lipgloss.JoinVertical(lipgloss.Left, parts...)
 	return borderStyle.Width(innerWidth).Height(innerHeight).Render(full)
+}
+
+// renderActionFooter renders the bottom-of-overlay row showing scroll % on
+// the right and a reset hint on the left.
+func renderActionFooter(w int, percent float64, label string) string {
+	hint := "↻ R · ✕ Esc"
+	if label != "" {
+		hint = "[" + label + "]  " + hint
+	}
+	percentStr := fmt.Sprintf("%3.f%% ⥮", percent*100)
+	pw := lipgloss.Width(percentStr)
+	hintStyle := lipgloss.NewStyle().Width(w - pw).AlignHorizontal(lipgloss.Left).Faint(true)
+	pctStyle := lipgloss.NewStyle().Width(pw).AlignHorizontal(lipgloss.Right).Faint(true)
+	return lipgloss.JoinHorizontal(lipgloss.Left, hintStyle.Render(hint), pctStyle.Render(percentStr))
 }
 
 // inActionOverlayState reports whether the component should render via the

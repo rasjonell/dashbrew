@@ -29,7 +29,7 @@ func newTextComponent(base baseComponent) *TextComponent {
 
 func (c *TextComponent) View(w, h int, focused bool) string {
 	if c.inActionOverlayState() {
-		return renderActionOverlay(c.baseComponent, w, h, focused)
+		return renderActionOverlay(&c.baseComponent, w, h, focused)
 	}
 
 	style, focusedStyle, border := GetBorderStyle(c.styles.Border)
@@ -83,6 +83,9 @@ func (c *TextComponent) SetContent(result data.FetchOutput) (Component, tea.Cmd)
 func (c *TextComponent) Update(msg tea.Msg) (Component, tea.Cmd) {
 	newInstance := *c
 	if cmd, handled := tickActionSpinner(&newInstance.baseComponent, msg); handled {
+		return &newInstance, cmd
+	}
+	if cmd, handled := updateActionViewport(&newInstance.baseComponent, msg); handled {
 		return &newInstance, cmd
 	}
 
