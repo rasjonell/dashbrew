@@ -143,6 +143,12 @@ func (m *model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	case fetchResultMsg:
 		if comp, ok := m.components[msg.ID]; ok {
+			if comp.ActionActive() || comp.ActionLoading() {
+				// stale data fetch arriving while user is in an action state —
+				// don't clobber the overlay; the next scheduled tick (or a
+				// manual R reset) will refetch fresh data.
+				break
+			}
 			updatedComp, cmd := comp.SetContent(msg.Result)
 			m.components[msg.ID] = updatedComp
 			cmds = append(cmds, cmd)
@@ -150,8 +156,15 @@ func (m *model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	case refreshMsg:
 		if comp, ok := m.components[msg.ID]; ok {
-			fetchCmd := fetchComponentAsyncCmd(comp.ID(), comp.Config())
 			rescheduleCmd := m.scheduleSingleRefresh(comp.ID(), comp.Config())
+			if comp.ActionActive() {
+				// sticky replace_pane: keep the timer chain alive but don't
+				// refetch — the user's action output stays on screen until
+				// they press R or Esc.
+				cmds = append(cmds, rescheduleCmd)
+				break
+			}
+			fetchCmd := fetchComponentAsyncCmd(comp.ID(), comp.Config())
 			cmds = append(cmds, fetchCmd, rescheduleCmd)
 		}
 
@@ -202,6 +215,23 @@ func (m *model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}
 
 			return m, tea.Batch(cmds...)
+		}
+
+		if focusedExists && (focusedComp.ActionActive() || focusedComp.ActionLoading()) {
+			if msg.String() == "esc" {
+				updated, cmd := focusedComp.ResetAction()
+				m.components[m.focusedComponentId] = updated
+				cmds = append(cmds, cmd)
+				return m, tea.Batch(cmds...)
+			}
+			if key.Matches(msg, keys.Refresh) {
+				updated, cmd := focusedComp.ResetAction()
+				m.components[m.focusedComponentId] = updated
+				cmds = append(cmds, cmd, fetchComponentAsyncCmd(focusedComp.ID(), focusedComp.Config()))
+				return m, tea.Batch(cmds...)
+			}
+			// other keys fall through — navigation, scrolling the action
+			// overlay, etc. continue to work over the top.
 		}
 
 		switch {
