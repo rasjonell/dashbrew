@@ -20,7 +20,9 @@ type paletteItem struct {
 func (i paletteItem) Title() string {
 	return fmt.Sprintf("[%s] %s", i.componentTitle, i.actionLabel)
 }
-func (i paletteItem) Description() string { return fmt.Sprintf("key: %s · type: %s", i.key, i.action.Type) }
+func (i paletteItem) Description() string {
+	return fmt.Sprintf("key: %s · type: %s", i.key, i.action.Type)
+}
 func (i paletteItem) FilterValue() string {
 	return i.componentTitle + " " + i.actionLabel + " " + i.key
 }

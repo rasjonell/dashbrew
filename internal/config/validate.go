@@ -7,21 +7,21 @@ import (
 )
 
 var reservedKeys = map[string]struct{}{
-	"ctrl+c":     {},
-	"ctrl+k":     {},
-	"shift+up":   {},
-	"shift+down": {},
-	"shift+left": {},
+	"ctrl+c":      {},
+	"ctrl+k":      {},
+	"shift+up":    {},
+	"shift+down":  {},
+	"shift+left":  {},
 	"shift+right": {},
-	"H":          {},
-	"J":          {},
-	"K":          {},
-	"L":          {},
-	"a":          {},
-	"A":          {},
-	"r":          {},
-	"R":          {},
-	"esc":        {},
+	"H":           {},
+	"J":           {},
+	"K":           {},
+	"L":           {},
+	"a":           {},
+	"A":           {},
+	"r":           {},
+	"R":           {},
+	"esc":         {},
 }
 
 var validActionTypes = map[string]struct{}{

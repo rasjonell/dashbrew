@@ -35,14 +35,14 @@ type componentOutput struct {
 }
 
 type keyMap struct {
-	Up           key.Binding
-	Add          key.Binding
-	Down         key.Binding
-	Left         key.Binding
-	Quit         key.Binding
-	Right        key.Binding
-	Refresh      key.Binding
-	PaletteOpen  key.Binding
+	Up          key.Binding
+	Add         key.Binding
+	Down        key.Binding
+	Left        key.Binding
+	Quit        key.Binding
+	Right       key.Binding
+	Refresh     key.Binding
+	PaletteOpen key.Binding
 }
 
 var keys = keyMap{
