@@ -54,35 +54,46 @@ func (c *HistogramComponent) View(w, h int, focused bool) string {
 	header := c.renderHeader(border)
 	headerHeight := lipgloss.Height(header)
 
-	footerHeight := 0
-	if !(c.viewport.AtTop() && c.viewport.AtBottom()) {
-		footerHeight = 1
-	}
-	var footer string
-	if footerHeight > 0 {
-		footer = c.renderFooter(c.viewport.Width, c.viewport.ScrollPercent(), c.config.Data.Caption)
-	}
-
+	// Decide whether the footer (caption + scroll %) is needed based on this
+	// frame's content rather than the viewport's stale dimensions from the
+	// previous render — otherwise the first frame after data arrives uses the
+	// previous frame's no-data state and gets the height calculation wrong.
 	c.viewport.Width = innerWidth
-	c.viewport.Height = max(0, innerHeight-headerHeight-footerHeight)
 
-	if c.err != nil {
-		c.content = fmt.Sprintf("[Error fetching/parsing data]\n%s", c.err.Error())
-	} else if len(c.bins) == 0 {
-		c.content = "[Loading or No Data]"
-	} else if innerWidth < 5 {
-		c.content = "[Area Too Small]"
-	} else {
-		c.content = c.renderHistogram(innerWidth, footerHeight > 0)
+	var content string
+	switch {
+	case c.err != nil:
+		content = fmt.Sprintf("[Error fetching/parsing data]\n%s", c.err.Error())
+	case len(c.bins) == 0:
+		content = "[Loading or No Data]"
+	case innerWidth < 5:
+		content = "[Area Too Small]"
+	default:
+		// Render with caption inline; we'll re-render without the inline caption
+		// below if a footer ends up being shown.
+		content = c.renderHistogram(innerWidth, false)
 	}
 
+	contentHeight := lipgloss.Height(content)
+	available := max(0, innerHeight-headerHeight)
+	footerHeight := 0
+	if contentHeight > available {
+		footerHeight = 1
+		// re-render without the inline caption since the footer renders it
+		if c.err == nil && len(c.bins) > 0 && innerWidth >= 5 {
+			content = c.renderHistogram(innerWidth, true)
+		}
+	}
+
+	c.content = content
+	c.viewport.Height = max(0, innerHeight-headerHeight-footerHeight)
 	c.viewport.SetContent(c.content)
 
-	fullContent := lipgloss.JoinVertical(lipgloss.Left,
-		header,
-		c.viewport.View(),
-		footer,
-	)
+	parts := []string{header, c.viewport.View()}
+	if footerHeight > 0 {
+		parts = append(parts, c.renderFooter(c.viewport.Width, c.viewport.ScrollPercent(), c.config.Data.Caption))
+	}
+	fullContent := lipgloss.JoinVertical(lipgloss.Left, parts...)
 
 	return borderStyle.
 		Width(innerWidth).
