@@ -221,14 +221,17 @@ func (c *TableComponent) parseDataToTableRows(rawData string, columns []*config.
 func getTableStyles(styleCfg *config.StyleConfig) table.Styles {
 	s := table.DefaultStyles()
 	normalFg, _, border := GetBorderStyle(styleCfg.Border)
+	accent := PaletteColor(styleCfg, "accent", lipgloss.Color("#bd93f9"))
 
 	s.Header = s.Header.
 		BorderStyle(border).
 		BorderForeground(normalFg.GetBorderTopBackground()).
 		BorderBottom(true).
-		Bold(true)
+		Bold(true).
+		Foreground(accent)
 	s.Selected = s.Selected.
-		Bold(true)
+		Bold(true).
+		Foreground(accent)
 
 	return s
 }
