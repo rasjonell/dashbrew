@@ -42,21 +42,17 @@ func (c *TextComponent) View(w, h int, focused bool) string {
 	c.viewport.Width = innerWidth
 	footerHeight := 0
 	if !(c.viewport.AtTop() && c.viewport.AtBottom()) {
-		footerHeight = 2
+		footerHeight = 1
 	}
-	c.viewport.Height = max(0, innerHeight-headerHeight)
+	c.viewport.Height = max(0, innerHeight-headerHeight-footerHeight)
 	c.viewport.SetContent(WrapContent(c.content, c.viewport.Width))
 
-	var footer string
+	parts := []string{header, c.viewport.View()}
 	if footerHeight > 0 {
-		footer = c.renderFooter(c.viewport.Width, c.viewport.ScrollPercent(), c.config.Data.Caption)
+		parts = append(parts, c.renderFooter(c.viewport.Width, c.viewport.ScrollPercent(), c.config.Data.Caption))
 	}
 
-	fullContent := lipgloss.JoinVertical(lipgloss.Left,
-		header,
-		c.viewport.View(),
-		footer,
-	)
+	fullContent := lipgloss.JoinVertical(lipgloss.Left, parts...)
 
 	return borderStyle.
 		Width(innerWidth).
