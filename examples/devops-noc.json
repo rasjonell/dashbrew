@@ -1,0 +1,185 @@
+{
+  "style": {
+    "theme": "tokyo-night",
+    "layout": { "gap": 1 },
+    "focusMode": "highlight"
+  },
+  "layout": {
+    "type": "container",
+    "direction": "column",
+    "children": [
+      {
+        "type": "component",
+        "flex": 2,
+        "component": {
+          "id": "banner",
+          "type": "text",
+          "title": "ops",
+          "icon": "▣",
+          "titleAlign": "right",
+          "data": {
+            "source": "script",
+            "command": "./examples/scripts/banner.sh noc",
+            "refresh_interval": 60
+          }
+        }
+      },
+      {
+        "type": "container",
+        "direction": "row",
+        "flex": 3,
+        "children": [
+          {
+            "type": "component",
+            "flex": 1,
+            "component": {
+              "id": "svc-api",
+              "type": "text",
+              "title": "api",
+              "icon": "◯",
+              "titleAlign": "center",
+              "data": {
+                "source": "script",
+                "command": "./examples/scripts/service.sh api",
+                "refresh_interval": 3
+              },
+              "style": {
+                "palette": {
+                  "border": "#3b5780",
+                  "borderFocused": "#7aa2f7",
+                  "accent": "#7aa2f7"
+                }
+              }
+            }
+          },
+          {
+            "type": "component",
+            "flex": 1,
+            "component": {
+              "id": "svc-db",
+              "type": "text",
+              "title": "db",
+              "icon": "▣",
+              "titleAlign": "center",
+              "data": {
+                "source": "script",
+                "command": "./examples/scripts/service.sh db",
+                "refresh_interval": 3
+              },
+              "style": {
+                "palette": {
+                  "border": "#4b7045",
+                  "borderFocused": "#9ece6a",
+                  "accent": "#9ece6a"
+                }
+              }
+            }
+          },
+          {
+            "type": "component",
+            "flex": 1,
+            "component": {
+              "id": "svc-cache",
+              "type": "text",
+              "title": "cache",
+              "icon": "⬢",
+              "titleAlign": "center",
+              "data": {
+                "source": "script",
+                "command": "./examples/scripts/service.sh cache",
+                "refresh_interval": 3
+              },
+              "style": {
+                "palette": {
+                  "border": "#7a5e2e",
+                  "borderFocused": "#e0af68",
+                  "accent": "#e0af68"
+                }
+              }
+            }
+          },
+          {
+            "type": "component",
+            "flex": 1,
+            "component": {
+              "id": "svc-queue",
+              "type": "text",
+              "title": "queue",
+              "icon": "⏵",
+              "titleAlign": "center",
+              "data": {
+                "source": "script",
+                "command": "./examples/scripts/service.sh queue",
+                "refresh_interval": 3
+              },
+              "style": {
+                "palette": {
+                  "border": "#7a3a44",
+                  "borderFocused": "#f7768e",
+                  "accent": "#f7768e"
+                }
+              }
+            }
+          }
+        ]
+      },
+      {
+        "type": "component",
+        "flex": 4,
+        "component": {
+          "id": "latency",
+          "type": "chart",
+          "title": "p99 latency",
+          "icon": "📈",
+          "data": {
+            "source": "script",
+            "command": "./examples/scripts/latency.sh",
+            "refresh_interval": 2,
+            "refresh_mode": "append",
+            "caption": "ms · all services aggregated · live append"
+          }
+        }
+      },
+      {
+        "type": "container",
+        "direction": "row",
+        "flex": 5,
+        "children": [
+          {
+            "type": "component",
+            "flex": 2,
+            "component": {
+              "id": "errors",
+              "type": "histogram",
+              "title": "responses by status",
+              "icon": "▤",
+              "titleAlign": "center",
+              "data": {
+                "source": "script",
+                "command": "./examples/scripts/errors.sh",
+                "refresh_interval": 4,
+                "caption": "1-minute rollup"
+              },
+              "style": { "barStyle": "gradient" }
+            }
+          },
+          {
+            "type": "component",
+            "flex": 3,
+            "component": {
+              "id": "logs",
+              "type": "text",
+              "title": "live log",
+              "icon": "≡",
+              "data": {
+                "source": "script",
+                "command": "./examples/scripts/log-tail.sh",
+                "refresh_interval": 2
+              }
+            }
+          }
+        ]
+      }
+    ]
+  }
+}

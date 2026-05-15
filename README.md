@@ -82,6 +82,17 @@ go install ./cmd/dashbrew
 dashbrew -c dashboard.json
 ```
 
+## Examples
+
+The [`examples/`](./examples) directory ships polished, opinionated dashboards you can run directly:
+
+- [`minimal.json`](./examples/minimal.json): smallest valid dashboard with a clean ASCII brand mark
+- [`hackerman.json`](./examples/hackerman.json): cyberpunk green-on-black ops board with MATRIX banner, live network throughput, threat feed, and an attack-vector gradient histogram
+- [`trading-desk.json`](./examples/trading-desk.json): Bloomberg-amber crypto cockpit with live coinpaprika tickers and a per-symbol market-cap histogram
+- [`devops-noc.json`](./examples/devops-noc.json): production NOC board with coloured service tiles, p99 latency chart, status histogram, and a live log tail
+
+See [`examples/README.md`](./examples/README.md) for screenshots, dependencies, and run instructions.
+
 ## Complete Documentation
 
 For comprehensive documentation on all features, please refer to our [GitHub Wiki](https://github.com/rasjonell/dashbrew/wiki):

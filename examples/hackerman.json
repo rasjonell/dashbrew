@@ -1,0 +1,120 @@
+{
+  "style": {
+    "palette": {
+      "background": "#0a0e0d",
+      "foreground": "#7dffb8",
+      "dim": "#1f6a48",
+      "accent": "#00ff66",
+      "success": "#00ff66",
+      "warning": "#fff066",
+      "error": "#ff3860",
+      "border": "#0aa050",
+      "borderFocused": "#00ffff"
+    },
+    "border": { "type": "thicc" },
+    "layout": { "gap": 1 },
+    "focusMode": "highlight"
+  },
+  "layout": {
+    "type": "container",
+    "direction": "column",
+    "children": [
+      {
+        "type": "component",
+        "flex": 2,
+        "component": {
+          "id": "banner",
+          "type": "text",
+          "title": "uplink",
+          "icon": "▲",
+          "titleAlign": "right",
+          "data": {
+            "source": "script",
+            "command": "./examples/scripts/banner.sh matrix",
+            "refresh_interval": 30
+          }
+        }
+      },
+      {
+        "type": "container",
+        "direction": "row",
+        "flex": 4,
+        "children": [
+          {
+            "type": "component",
+            "flex": 3,
+            "component": {
+              "id": "throughput",
+              "type": "chart",
+              "title": "net throughput",
+              "icon": "⟶",
+              "data": {
+                "source": "script",
+                "command": "./examples/scripts/throughput.sh",
+                "refresh_interval": 1,
+                "refresh_mode": "append",
+                "caption": "Mbps · upstream · live"
+              }
+            }
+          },
+          {
+            "type": "component",
+            "flex": 2,
+            "component": {
+              "id": "threats",
+              "type": "text",
+              "title": "threat feed",
+              "icon": "✦",
+              "titleAlign": "center",
+              "data": {
+                "source": "script",
+                "command": "./examples/scripts/threats.sh",
+                "refresh_interval": 4
+              }
+            }
+          }
+        ]
+      },
+      {
+        "type": "container",
+        "direction": "row",
+        "flex": 5,
+        "children": [
+          {
+            "type": "component",
+            "flex": 3,
+            "component": {
+              "id": "sessions",
+              "type": "list",
+              "title": "active sessions",
+              "icon": "◉",
+              "data": {
+                "source": "script",
+                "command": "./examples/scripts/connections.sh",
+                "refresh_interval": 2
+              }
+            }
+          },
+          {
+            "type": "component",
+            "flex": 2,
+            "component": {
+              "id": "vectors",
+              "type": "histogram",
+              "title": "attack vectors",
+              "icon": "✕",
+              "titleAlign": "center",
+              "data": {
+                "source": "script",
+                "command": "./examples/scripts/attack-vectors.sh",
+                "refresh_interval": 5,
+                "caption": "last 5 minutes"
+              },
+              "style": { "barStyle": "gradient" }
+            }
+          }
+        ]
+      }
+    ]
+  }
+}

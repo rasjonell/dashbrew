@@ -1,0 +1,19 @@
+{
+  "style": {
+    "theme": "dracula"
+  },
+  "layout": {
+    "type": "component",
+    "component": {
+      "id": "hello",
+      "type": "text",
+      "title": "welcome",
+      "icon": "👋",
+      "titleAlign": "center",
+      "data": {
+        "source": "script",
+        "command": "./examples/scripts/banner.sh dashbrew; echo; echo '   the smallest valid dashboard: one component, one shell source.'; echo; echo '   $ go install github.com/rasjonell/dashbrew/cmd/dashbrew@latest'; echo '   $ dashbrew -c examples/minimal.json'; echo"
+      }
+    }
+  }
+}

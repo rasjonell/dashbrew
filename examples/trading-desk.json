@@ -1,0 +1,173 @@
+{
+  "style": {
+    "theme": "gruvbox-dark",
+    "layout": { "gap": 1 },
+    "focusMode": "highlight"
+  },
+  "layout": {
+    "type": "container",
+    "direction": "column",
+    "children": [
+      {
+        "type": "component",
+        "flex": 2,
+        "component": {
+          "id": "banner",
+          "type": "text",
+          "title": "desk",
+          "icon": "$",
+          "titleAlign": "right",
+          "data": {
+            "source": "script",
+            "command": "./examples/scripts/banner.sh trading",
+            "refresh_interval": 60
+          }
+        }
+      },
+      {
+        "type": "container",
+        "direction": "row",
+        "flex": 3,
+        "children": [
+          {
+            "type": "component",
+            "flex": 1,
+            "component": {
+              "id": "btc-tile",
+              "type": "text",
+              "title": "BTC",
+              "icon": "₿",
+              "titleAlign": "center",
+              "data": {
+                "source": "script",
+                "command": "./examples/scripts/ticker.sh BTC",
+                "refresh_interval": 60
+              }
+            }
+          },
+          {
+            "type": "component",
+            "flex": 1,
+            "component": {
+              "id": "eth-tile",
+              "type": "text",
+              "title": "ETH",
+              "icon": "Ξ",
+              "titleAlign": "center",
+              "data": {
+                "source": "script",
+                "command": "./examples/scripts/ticker.sh ETH",
+                "refresh_interval": 60
+              }
+            }
+          },
+          {
+            "type": "component",
+            "flex": 1,
+            "component": {
+              "id": "sol-tile",
+              "type": "text",
+              "title": "SOL",
+              "icon": "◎",
+              "titleAlign": "center",
+              "data": {
+                "source": "script",
+                "command": "./examples/scripts/ticker.sh SOL",
+                "refresh_interval": 60
+              }
+            }
+          },
+          {
+            "type": "component",
+            "flex": 1,
+            "component": {
+              "id": "bnb-tile",
+              "type": "text",
+              "title": "BNB",
+              "icon": "◆",
+              "titleAlign": "center",
+              "data": {
+                "source": "script",
+                "command": "./examples/scripts/ticker.sh BNB",
+                "refresh_interval": 60
+              }
+            }
+          }
+        ]
+      },
+      {
+        "type": "component",
+        "flex": 5,
+        "component": {
+          "id": "btc-chart",
+          "type": "chart",
+          "title": "BTC USD",
+          "icon": "📈",
+          "data": {
+            "source": "script",
+            "command": "./examples/scripts/btc-spot.sh",
+            "refresh_interval": 30,
+            "refresh_mode": "append",
+            "caption": "live spot · coinpaprika"
+          }
+        }
+      },
+      {
+        "type": "container",
+        "direction": "row",
+        "flex": 5,
+        "children": [
+          {
+            "type": "component",
+            "flex": 3,
+            "component": {
+              "id": "mcap",
+              "type": "histogram",
+              "title": "market cap (USD billions)",
+              "icon": "▦",
+              "titleAlign": "center",
+              "data": {
+                "source": "script",
+                "command": "./examples/scripts/mcap.sh",
+                "refresh_interval": 120,
+                "caption": "top 8 by total market cap"
+              },
+              "style": {
+                "barStyle": "map",
+                "barColors": {
+                  "BTC": "#fabd2f",
+                  "ETH": "#83a598",
+                  "USDT": "#b8bb26",
+                  "USDC": "#8ec07c",
+                  "BNB": "#fe8019",
+                  "XRP": "#d3869b",
+                  "SOL": "#cba6f7",
+                  "TRX": "#fb4934",
+                  "DOGE": "#fabd2f",
+                  "ADA": "#458588"
+                }
+              }
+            }
+          },
+          {
+            "type": "component",
+            "flex": 2,
+            "component": {
+              "id": "wisdom",
+              "type": "text",
+              "title": "wisdom",
+              "icon": "★",
+              "titleAlign": "center",
+              "data": {
+                "source": "api",
+                "url": "https://api.adviceslip.com/advice",
+                "json_path": "$.slip.advice",
+                "refresh_interval": 25
+              }
+            }
+          }
+        ]
+      }
+    ]
+  }
+}
