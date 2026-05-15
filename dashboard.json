@@ -1,10 +1,8 @@
 {
   "style": {
-    "border": {
-      "type": "thicc",
-      "color": "#888888",
-      "focusedColor": "#444444"
-    }
+    "theme": "gruvbox-dark",
+    "layout": { "gap": 0 },
+    "focusMode": "highlight"
   },
   "layout": {
     "type": "container",

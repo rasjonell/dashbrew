@@ -1,7 +1,7 @@
 {
   "style": {
     "theme": "dracula",
-    "layout": { "gap": 1 },
+    "layout": { "gap": 0 },
     "focusMode": "highlight"
   },
   "layout": {
