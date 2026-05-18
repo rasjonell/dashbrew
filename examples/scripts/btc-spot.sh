@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
-# Emits the current BTC USD price as a single float. Used with the chart
-# component's refresh_mode: "append" so each tick appends one point.
+# Emits the current simulated BTC USD price as a single float. Used by the
+# trading-desk chart in refresh_mode "append" so each tick appends one point.
 set -e
-curl -sf --max-time 8 https://api.coinpaprika.com/v1/tickers/btc-bitcoin \
-  | jq -r '.quotes.USD.price'
+here="$(cd "$(dirname "$0")" && pwd)"
+exec "$here/prices.sh" BTC

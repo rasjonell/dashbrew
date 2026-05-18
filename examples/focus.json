@@ -1,0 +1,85 @@
+{
+  "style": {
+    "theme": "catppuccin-mocha",
+    "layout": { "gap": 1 },
+    "focusMode": "highlight"
+  },
+  "layout": {
+    "type": "container",
+    "direction": "column",
+    "children": [
+      {
+        "type": "component",
+        "flex": 5,
+        "component": {
+          "id": "clock",
+          "type": "text",
+          "title": "now",
+          "icon": "✦",
+          "titleAlign": "center",
+          "data": {
+            "source": "script",
+            "command": "./examples/scripts/clock.sh",
+            "refresh_interval": 1
+          }
+        }
+      },
+      {
+        "type": "container",
+        "direction": "row",
+        "flex": 4,
+        "children": [
+          {
+            "type": "component",
+            "flex": 3,
+            "component": {
+              "id": "focus-chart",
+              "type": "chart",
+              "title": "focus",
+              "icon": "◐",
+              "data": {
+                "source": "script",
+                "command": "./examples/scripts/pomodoro.sh",
+                "refresh_interval": 5,
+                "refresh_mode": "append",
+                "caption": "pomodoro · 25/5 work-break cycle"
+              }
+            }
+          },
+          {
+            "type": "component",
+            "flex": 2,
+            "component": {
+              "id": "tasks",
+              "type": "todo",
+              "title": "today",
+              "icon": "✓",
+              "titleAlign": "center",
+              "data": {
+                "source": "./todo.txt"
+              }
+            }
+          }
+        ]
+      },
+      {
+        "type": "component",
+        "flex": 4,
+        "component": {
+          "id": "progress",
+          "type": "histogram",
+          "title": "hourly progress",
+          "icon": "▤",
+          "titleAlign": "center",
+          "data": {
+            "source": "script",
+            "command": "./examples/scripts/progress.sh",
+            "refresh_interval": 60,
+            "caption": "today by hour · % focused time"
+          },
+          "style": { "barStyle": "gradient" }
+        }
+      }
+    ]
+  }
+}

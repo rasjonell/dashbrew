@@ -1,21 +1,8 @@
 #!/usr/bin/env bash
-# Renders an ASCII Shadow banner. First arg picks which banner: matrix | trading | noc | dashbrew.
+# Renders an ASCII Shadow banner. First arg picks which banner: trading | noc | focus | dashbrew.
 set -e
 
 case "${1:-dashbrew}" in
-  matrix)
-cat <<'EOF'
-
-  ███╗   ███╗  █████╗  ████████╗ ██████╗  ██╗ ██╗  ██╗
-  ████╗ ████║ ██╔══██╗ ╚══██╔══╝ ██╔══██╗ ██║ ╚██╗██╔╝
-  ██╔████╔██║ ███████║    ██║    ██████╔╝ ██║  ╚███╔╝
-  ██║╚██╔╝██║ ██╔══██║    ██║    ██╔══██╗ ██║  ██╔██╗
-  ██║ ╚═╝ ██║ ██║  ██║    ██║    ██║  ██║ ██║ ██╔╝ ██╗
-  ╚═╝     ╚═╝ ╚═╝  ╚═╝    ╚═╝    ╚═╝  ╚═╝ ╚═╝ ╚═╝  ╚═╝
-
-   root@matrix:~# ./surveillance.sh --watch --alert-on-anomaly
-EOF
-    ;;
   trading)
 cat <<'EOF'
 
@@ -41,6 +28,20 @@ cat <<'EOF'
    ╚═╝  ╚═══╝ ╚═════╝  ╚═════╝
 
    network operations · prod-us-east-1
+EOF
+    ;;
+  focus)
+cat <<'EOF'
+
+   ▄▄▄▄▄ ▒█████   ▄████▄   █    ██   ██████
+   ▓█   ▀▒██▒  ██▒▒██▀ ▀█   ██  ▓██▒▒██    ▒
+   ▒███  ▒██░  ██▒▒▓█    ▄ ▓██  ▒██░░ ▓██▄
+   ▒▓█  ▄▒██   ██░▒▓▓▄ ▄██▒▓▓█  ░██░  ▒   ██▒
+   ░▒████░ ████▓▒░▒ ▓███▀ ░▒▒█████▓ ▒██████▒▒
+   ░░ ▒░ ░ ▒░▒░▒░ ░ ░▒ ▒  ░░▒▓▒ ▒ ▒ ▒ ▒▓▒ ▒ ░
+    ░ ░    ░ ▒ ▒░   ░  ▒   ░░▒░ ░ ░ ░ ░▒  ░ ░
+
+   today's intent · one thing at a time
 EOF
     ;;
   *)

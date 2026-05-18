@@ -10,7 +10,7 @@
     "children": [
       {
         "type": "component",
-        "flex": 2,
+        "flex": 6,
         "component": {
           "id": "banner",
           "type": "text",
@@ -49,7 +49,18 @@
                   "borderFocused": "#7aa2f7",
                   "accent": "#7aa2f7"
                 }
-              }
+              },
+              "bindings": [
+                {
+                  "key": "d",
+                  "label": "show api detail",
+                  "action": {
+                    "type": "replace_pane",
+                    "command": "./examples/scripts/service-detail.sh api",
+                    "output_as": "text"
+                  }
+                }
+              ]
             }
           },
           {
@@ -72,7 +83,18 @@
                   "borderFocused": "#9ece6a",
                   "accent": "#9ece6a"
                 }
-              }
+              },
+              "bindings": [
+                {
+                  "key": "d",
+                  "label": "show db detail",
+                  "action": {
+                    "type": "replace_pane",
+                    "command": "./examples/scripts/service-detail.sh db",
+                    "output_as": "text"
+                  }
+                }
+              ]
             }
           },
           {
@@ -95,7 +117,18 @@
                   "borderFocused": "#e0af68",
                   "accent": "#e0af68"
                 }
-              }
+              },
+              "bindings": [
+                {
+                  "key": "d",
+                  "label": "show cache detail",
+                  "action": {
+                    "type": "replace_pane",
+                    "command": "./examples/scripts/service-detail.sh cache",
+                    "output_as": "text"
+                  }
+                }
+              ]
             }
           },
           {
@@ -118,7 +151,18 @@
                   "borderFocused": "#f7768e",
                   "accent": "#f7768e"
                 }
-              }
+              },
+              "bindings": [
+                {
+                  "key": "d",
+                  "label": "show queue detail",
+                  "action": {
+                    "type": "replace_pane",
+                    "command": "./examples/scripts/service-detail.sh queue",
+                    "output_as": "text"
+                  }
+                }
+              ]
             }
           }
         ]
@@ -137,7 +181,18 @@
             "refresh_interval": 2,
             "refresh_mode": "append",
             "caption": "ms · all services aggregated · live append"
-          }
+          },
+          "bindings": [
+            {
+              "key": "s",
+              "label": "snapshot 60 samples",
+              "action": {
+                "type": "replace_pane",
+                "command": "./examples/scripts/latency.sh 60",
+                "output_as": "inherit"
+              }
+            }
+          ]
         }
       },
       {
@@ -175,7 +230,27 @@
                 "source": "script",
                 "command": "./examples/scripts/log-tail.sh",
                 "refresh_interval": 2
-              }
+              },
+              "bindings": [
+                {
+                  "key": "e",
+                  "label": "errors only",
+                  "action": {
+                    "type": "replace_pane",
+                    "command": "./examples/scripts/log-filtered.sh error",
+                    "output_as": "text"
+                  }
+                },
+                {
+                  "key": "w",
+                  "label": "warnings only",
+                  "action": {
+                    "type": "replace_pane",
+                    "command": "./examples/scripts/log-filtered.sh warn",
+                    "output_as": "text"
+                  }
+                }
+              ]
             }
           }
         ]
