@@ -8,6 +8,7 @@ import (
 	"github.com/charmbracelet/bubbles/viewport"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
+	"github.com/charmbracelet/x/ansi"
 	"github.com/rasjonell/dashbrew/internal/config"
 	"github.com/rasjonell/dashbrew/internal/data"
 )
@@ -300,6 +301,11 @@ func (b baseComponent) renderHeader(border lipgloss.Border, focused bool, innerW
 	}
 	if b.config.Icon != "" {
 		title = b.config.Icon + " " + title
+	}
+	if innerWidth <= 4 {
+		title = ""
+	} else {
+		title = ansi.Truncate(title, innerWidth-4, "…")
 	}
 
 	// Border sides on the title cell depend on the title's alignment so the
