@@ -53,7 +53,8 @@ func (c *TableComponent) View(w, h int, focused bool) string {
 	headerHeight := lipgloss.Height(header)
 
 	// TODO: add a separate Resize() trigger for components
-	c.cols = getTableColumns(c.config.Data.Columns, innerWidth-6)
+	columnWidth := max(0, innerWidth-2*len(c.config.Data.Columns))
+	c.cols = getTableColumns(c.config.Data.Columns, columnWidth)
 	c.table.SetColumns(c.cols)
 
 	tableHeight := max(1, innerHeight-headerHeight-1)
