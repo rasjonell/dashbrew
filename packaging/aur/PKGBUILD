@@ -1,0 +1,45 @@
+# Maintainer: Gurgen Hayrapetyan <info.gurgen at gmail dot com>
+
+pkgname=dashbrew
+pkgver=1.2.0
+pkgrel=1
+pkgdesc='Terminal dashboard builder driven by a JSON config'
+arch=('x86_64' 'aarch64')
+url='https://github.com/rasjonell/dashbrew'
+license=('MIT')
+depends=('bash' 'glibc')
+makedepends=('go')
+source=("$pkgname-$pkgver.tar.gz::$url/archive/refs/tags/v$pkgver.tar.gz")
+sha256sums=('bcc7943a105229b22efee97c291ee1b4a6fbae0b7637c90f7526ae8395c2e89d')
+
+prepare() {
+  cd "$pkgname-$pkgver"
+  export GOPATH="$srcdir/gopath"
+  go mod download -x
+}
+
+build() {
+  cd "$pkgname-$pkgver"
+  export GOPATH="$srcdir/gopath"
+  export CGO_CPPFLAGS="$CPPFLAGS"
+  export CGO_CFLAGS="$CFLAGS"
+  export CGO_CXXFLAGS="$CXXFLAGS"
+  export CGO_LDFLAGS="$LDFLAGS"
+  export GOFLAGS="-buildmode=pie -trimpath -ldflags=-linkmode=external -mod=readonly -modcacherw"
+  go build -o build/$pkgname ./cmd/$pkgname
+}
+
+check() {
+  cd "$pkgname-$pkgver"
+  export GOPATH="$srcdir/gopath"
+  go test ./...
+}
+
+package() {
+  cd "$pkgname-$pkgver"
+  install -Dm755 build/$pkgname "$pkgdir/usr/bin/$pkgname"
+  install -Dm644 LICENSE "$pkgdir/usr/share/licenses/$pkgname/LICENSE"
+  install -Dm644 README.md CHANGELOG.md -t "$pkgdir/usr/share/doc/$pkgname"
+  cp -r examples "$pkgdir/usr/share/doc/$pkgname/examples"
+  rm -rf "$pkgdir/usr/share/doc/$pkgname/examples/gifs"
+}
