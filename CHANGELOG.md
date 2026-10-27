@@ -8,6 +8,16 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 Nothing yet.
 
+## [1.2.0]
+
+### Added
+
+- Example dashboards under `examples/`: `focus`, `trading-desk`, `devops-noc`, `minimal`, with their helper scripts and an `examples/README.md` index.
+
+### Fixed
+
+- Table panes overflowing their border: column widths now account for per-column padding, and long pane titles are truncated with `…` ([#3](https://github.com/rasjonell/dashbrew/pull/3), thanks @QueenDekim).
+
 ## [1.1.0]
 
 Big v2 themed feature drop. Old v1.0 configs keep working unchanged; every new field is optional with sensible defaults.
@@ -72,6 +82,7 @@ Initial public release.
 - Mouse click to focus a pane.
 - Table component with per-column `label`, `field` (JSONPath-style key for object rows), and `flex`.
 
-[Unreleased]: https://github.com/rasjonell/dashbrew/compare/v1.1.0...HEAD
+[Unreleased]: https://github.com/rasjonell/dashbrew/compare/v1.2.0...HEAD
+[1.2.0]: https://github.com/rasjonell/dashbrew/compare/v1.1.0...v1.2.0
 [1.1.0]: https://github.com/rasjonell/dashbrew/compare/v1.0.0...v1.1.0
 [1.0.0]: https://github.com/rasjonell/dashbrew/releases/tag/v1.0.0
